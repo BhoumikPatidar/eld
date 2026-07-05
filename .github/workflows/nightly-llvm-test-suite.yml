@@ -1,0 +1,124 @@
+name: Nightly LLVM Test Suite
+
+on:
+  pull_request: {} # Uncomment only to test this WF file update.
+  schedule:
+    - cron: '0 3 * * *'  # 9:00 PM CST
+  workflow_dispatch:     # Allows manual triggering
+
+
+permissions:
+  contents: write
+  actions: read
+jobs:
+  test-llvm-test-suite-x86_64:
+    if: github.repository == 'qualcomm/eld' || github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      ELD_SOURCE_DIR: ${{ github.workspace }}/llvm-project/llvm/tools/eld
+
+    steps:
+      - name: Checkout eld
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          path: llvm-project/llvm/tools/eld
+
+      - name: Configure workflow environment variables
+        uses: ./llvm-project/llvm/tools/eld/.github/workflows/ConfigureBuildWorkflowENV
+
+      - name: Record pre-build entry
+        if: github.event_name == 'schedule'
+        uses: ./llvm-project/llvm/tools/eld/.github/workflows/BuildStatusDataRecorder
+        with:
+          enabled: true
+          project: "llvm-project/llvm/tools/eld"
+          stage: "pre-"
+          workflow-name: "llvm-test-suite"
+          record-mode: "record"
+          status: "fail"
+          run-id: ${{github.run_id}}
+          arch-name: "x86_64"
+          branch-name: "${{env.BUILD_BRANCH}}"
+
+      - name: Set up Clang 20
+        uses: egor-tensin/setup-clang@23bc15cd4207e45f1566447deb48f4ff3ef932cb #v2.3
+        with:
+          version: "20"
+          platform: x64
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y libc++-dev libc++abi-dev \
+            libclang-rt-20-dev cmake ninja-build llvm-20 llvm-20-tools
+          pip3 install lit
+          echo "PATH=/usr/lib/llvm-20/bin:$PATH" >> $GITHUB_ENV
+
+      - name: Fetch nightly ELD
+        uses: ./llvm-project/llvm/tools/eld/.github/workflows/FetchNightlyToolset
+
+      - name: Verify tools
+        run: |
+          clang --version
+          ld.eld --version
+          lit --version
+          FileCheck --version
+
+      - name: Clone LLVM test suite
+        run: |
+          git clone --depth 1 https://github.com/llvm/llvm-test-suite.git
+
+      - name: Configure test suite
+        run: |
+          ELD_BIN=$(which ld.eld)
+          cmake -G Ninja \
+            -S llvm-test-suite \
+            -B build-llvm-test-suite \
+            -DCMAKE_C_COMPILER=$(which clang) \
+            -DCMAKE_CXX_COMPILER=$(which clang++) \
+            -DCMAKE_C_FLAGS="-fuse-ld=$ELD_BIN" \
+            -DCMAKE_CXX_FLAGS="-fuse-ld=$ELD_BIN -stdlib=libc++" \
+            -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=$ELD_BIN -stdlib=libc++" \
+            -DTEST_SUITE_SUBDIRS="SingleSource;MultiSource;MicroBenchmarks" \
+            -DTEST_SUITE_RUN_TYPE=nightly
+
+      - name: Build test suite
+        run: |
+          ninja -C build-llvm-test-suite -j$(nproc)
+
+      - name: Run tests
+        run: |
+          lit -j$(nproc) \
+            build-llvm-test-suite/SingleSource \
+            build-llvm-test-suite/MultiSource \
+            build-llvm-test-suite/MicroBenchmarks \
+            2>&1 | tee test-output.txt
+
+      - name: Validate test results with FileCheck
+        run: |
+          FileCheck --check-prefixes=COUNT \
+            ${ELD_SOURCE_DIR}/test/llvm-test-suite/x86_64/test-failures.txt \
+            < test-output.txt
+          echo "Test results validated"
+
+      - name: Upload test output
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
+        with:
+          name: llvm-test-suite-results
+          path: test-output.txt
+          retention-days: 2
+
+      - name: Update build entry
+        if: github.event_name == 'schedule'
+        uses: ./llvm-project/llvm/tools/eld/.github/workflows/BuildStatusDataRecorder
+        with:
+          enabled: true
+          project: "llvm-project/llvm/tools/eld"
+          stage: "post-"
+          workflow-name: "llvm-test-suite"
+          record-mode: "update"
+          status: "pass"
+          run-id: ${{github.run_id}}
+          arch-name: "x86_64"
+          branch-name: "${{env.BUILD_BRANCH}}"

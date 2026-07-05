@@ -1,0 +1,11 @@
+# Expected LLVM test-suite failures for ELD's x86_64 backend.
+#
+# Previously this listed 7 known MultiSource failures (ClamAV, hbd,
+# kimwitu++, lua, gs, consumer-lame, consumer-typeset) caused by a
+# merge-string RELATIVE relocation addend bug in x86_64LDBackend: a
+# non-virtual shadow of GNULDBackend::recordRelativeReloc() meant the
+# post-merge fixup in doPostLayout() never ran for x86_64, so RELATIVE
+# addends pointing into merged string sections kept their pre-merge
+# offset. That bug is fixed (see GNULDBackend.cpp / x86_64LDBackend.h),
+# and all 7 tests now pass. No failures are expected.
+COUNT-NOT: {{^FAIL: }}
