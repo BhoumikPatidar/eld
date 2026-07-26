@@ -1,0 +1,19 @@
+# glibc elf/ test suite — expected results for ELD x86_64 (split build)
+#
+# Setup: glibc .so files linked with LLD, test executables linked with ELD.
+# Baseline: upstream ELD on main without any glibc-specific fixes.
+#
+# PASSING tests (2) — workflow verifies these do not regress:
+#   tst-leaks1-mem
+#   tst-p_align3
+#
+# All other tests in the elf/ suite are expected to fail with current ELD.
+# As fixes land, tests will be moved to the passing list above and this
+# file will be updated.
+
+# Tests that must PASS — any failure here is a regression
+CHECK-DAG: PASS: elf/tst-leaks1-mem
+CHECK-DAG: PASS: elf/tst-p_align3
+
+# Total expected pass count
+COUNT-COUNT-2: {{^PASS: elf/}}
