@@ -94,7 +94,7 @@ jobs:
             -DCMAKE_CXX_COMPILER=$(which clang++) \
             -DCMAKE_C_FLAGS="--ld-path=$ELD_BIN" \
             -DCMAKE_CXX_FLAGS="--ld-path=$ELD_BIN -stdlib=libc++" \
-            -DCMAKE_EXE_LINKER_FLAGS="--ld-path=$ELD_BIN -stdlib=libc++ -Wl,-rpath,$LIB_DIR -Wl,-rpath,$RT_LIB_DIR" \
+            -DCMAKE_EXE_LINKER_FLAGS="--ld-path=$ELD_BIN -stdlib=libc++" \
             -DTEST_SUITE_RUN_TYPE=nightly
 
       - name: Build test suite
@@ -104,7 +104,7 @@ jobs:
       - name: Run tests
         run: |
           set -o pipefail
-          lit -j$(nproc) build-llvm-test-suite 2>&1 | tee test-output.txt
+          lit -v -j$(nproc) build-llvm-test-suite 2>&1 | tee test-output.txt
 
       - name: Upload test output
         if: always()

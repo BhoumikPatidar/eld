@@ -9,6 +9,7 @@ set -euo pipefail
 ALLOWED_LIBS=(
   "libc++.so*"
   "libc++abi.so*"
+  "libunwind.so*"
 )
 
 INSTALL_ROOT="$1"; shift

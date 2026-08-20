@@ -11,7 +11,7 @@ permissions:
   contents: write
 jobs:
   build-and-runtest-nightly:
-    if: github.repository == 'qualcomm/eld'
+    if: github.repository == 'qualcomm/eld' || github.repository == 'BhoumikPatidar/eld'
     runs-on: ubuntu-22.04
     env:
       BASE_BRANCH_NAME: ${{ github.event.pull_request.base.ref }}
@@ -261,7 +261,7 @@ jobs:
         with:
           name: install-nightly-toolchain.tar.xz
           path: install-nightly-toolchain.tar.xz
-          retention-days: 2
+          retention-days: 100
 
       - name: Check if biannual release day (Jan 1 or Jul 1)
         id: release_day
