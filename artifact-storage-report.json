@@ -1,13 +1,19 @@
 {
   "summary": {
-    "artifactCount": 13,
-    "activeArtifacts": 13,
-    "totalSize": "1.31 GB"
+    "artifactCount": 17,
+    "activeArtifacts": 17,
+    "totalSize": "1.50 GB"
   },
   "workflows": [
     {
       "name": "Nightly check",
       "artifacts": [
+        {
+          "name": "install-nightly-toolchain.tar.xz",
+          "size": "193.37 MB",
+          "createdAt": "2026-08-21T10:20:33Z",
+          "expiresAt": "2026-11-19T07:18:26Z"
+        },
         {
           "name": "install-nightly-toolchain.tar.xz",
           "size": "193.39 MB",
@@ -56,34 +62,40 @@
       "name": "Zephyr Nightly with ELD",
       "artifacts": [
         {
+          "name": "zephyr-twister-results-qemu_riscv64",
+          "size": "1.18 MB",
+          "createdAt": "2026-08-21T16:01:00Z",
+          "expiresAt": "2026-08-23T16:00:59Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_riscv32",
+          "size": "925.05 KB",
+          "createdAt": "2026-08-21T15:37:00Z",
+          "expiresAt": "2026-08-23T15:36:59Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_cortex_m3",
+          "size": "748.80 KB",
+          "createdAt": "2026-08-21T15:11:58Z",
+          "expiresAt": "2026-08-23T15:11:57Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_cortex_a53",
+          "size": "847.94 KB",
+          "createdAt": "2026-08-21T14:39:04Z",
+          "expiresAt": "2026-08-23T14:39:03Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_riscv32_xip",
+          "size": "19.17 KB",
+          "createdAt": "2026-08-21T11:31:20Z",
+          "expiresAt": "2026-08-23T11:31:20Z"
+        },
+        {
           "name": "zephyr-twister-results-qemu_x86_64",
           "size": "975.61 KB",
           "createdAt": "2026-08-20T10:46:45Z",
           "expiresAt": "2026-08-22T10:46:44Z"
-        },
-        {
-          "name": "zephyr-eld-invocations-qemu_x86_64",
-          "size": "104.30 KB",
-          "createdAt": "2026-08-19T20:14:34Z",
-          "expiresAt": "2026-08-21T20:14:33Z"
-        },
-        {
-          "name": "zephyr-twister-results-qemu_x86_64",
-          "size": "960.33 KB",
-          "createdAt": "2026-08-19T20:14:33Z",
-          "expiresAt": "2026-08-21T20:14:32Z"
-        },
-        {
-          "name": "zephyr-eld-invocations-qemu_x86_64",
-          "size": "26.92 KB",
-          "createdAt": "2026-08-19T17:52:04Z",
-          "expiresAt": "2026-08-21T17:52:03Z"
-        },
-        {
-          "name": "zephyr-twister-results-qemu_x86_64",
-          "size": "287.40 KB",
-          "createdAt": "2026-08-19T17:52:03Z",
-          "expiresAt": "2026-08-21T17:52:01Z"
         }
       ]
     },
@@ -92,9 +104,21 @@
       "artifacts": [
         {
           "name": "llvm-test-suite-results",
-          "size": "119.61 KB",
-          "createdAt": "2026-08-20T18:54:55Z",
-          "expiresAt": "2026-08-21T18:54:54Z"
+          "size": "196.66 KB",
+          "createdAt": "2026-08-21T12:14:45Z",
+          "expiresAt": "2026-08-22T12:14:44Z"
+        },
+        {
+          "name": "llvm-test-suite-results",
+          "size": "646.00 B",
+          "createdAt": "2026-08-21T11:57:44Z",
+          "expiresAt": "2026-08-22T11:57:43Z"
+        },
+        {
+          "name": "llvm-test-suite-results",
+          "size": "119.90 KB",
+          "createdAt": "2026-08-21T11:40:42Z",
+          "expiresAt": "2026-08-22T11:40:41Z"
         }
       ]
     }
