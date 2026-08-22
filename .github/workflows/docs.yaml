@@ -1,0 +1,95 @@
+name: Generate and Deploy Docs
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+      - 'include/**'
+  workflow_dispatch:     # Allows manual triggering
+
+permissions:
+  contents: write
+
+env:
+  D2_VERSION: v0.7.1
+
+jobs:
+  generate-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout llvm-project
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: llvm/llvm-project
+          path: llvm-project
+          ref: main
+
+      - name: Checkout eld
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: llvm-project/llvm/tools/eld
+          ref: main
+
+      - name: Configure workflow environment variables
+        uses: ./llvm-project/llvm/tools/eld/.github/workflows/ConfigureBuildWorkflowENV
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 #v6.3.0
+        with:
+          python-version: '3.11.4'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y graphviz doxygen libxml2 libxml2-dev libxslt1-dev
+          pip install -r llvm-project/llvm/tools/eld/docs/userguide/requirements.txt
+
+      - name: Install D2
+        run: |
+          curl -fsSL https://d2lang.com/install.sh | sh -s -- \
+            --method=standalone \
+            --prefix "$HOME/.local" \
+            --version "$D2_VERSION"
+          export PATH="$HOME/.local/bin:$PATH"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          d2 --version
+
+      - name: Validate D2 diagrams
+        run: |
+          find llvm-project/llvm/tools/eld/docs/userguide/documentation/images \
+            -type f -name '*.d2' -exec d2 validate {} \;
+
+      - name: Run CMake
+        run: |
+          mkdir obj
+          cd obj
+          cmake -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER:STRING=`which clang` \
+            -DCMAKE_CXX_COMPILER:STRING=`which clang++` \
+            -DLLVM_TARGETS_TO_BUILD:STRING="ARM;AArch64;RISCV;Hexagon" \
+            -DLLVM_ENABLE_SPHINX=On \
+            -DELD_ENABLE_PDF_DOCS:BOOL=ON \
+            ../llvm-project/llvm
+
+      - name: Generate documentation
+        run: |
+          cd obj
+          ninja eld-docs
+
+      - name: Deploy to docs branch
+        run: |
+          ROOT=$(pwd)
+          cd llvm-project/llvm/tools/eld
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@github.com'
+          git checkout --orphan docs
+          git rm -rf .
+          cp -r ${ROOT}/obj/tools/eld/docs/userguide/html/. .
+          touch .nojekyll
+          git add .
+          git commit -m "Update documentation"
+          git push -f origin HEAD:refs/heads/documentation

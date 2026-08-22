@@ -1,0 +1,102 @@
+{
+  "summary": {
+    "artifactCount": 13,
+    "activeArtifacts": 13,
+    "totalSize": "1.31 GB"
+  },
+  "workflows": [
+    {
+      "name": "Nightly check",
+      "artifacts": [
+        {
+          "name": "install-nightly-toolchain.tar.xz",
+          "size": "193.39 MB",
+          "createdAt": "2026-08-20T22:10:05Z",
+          "expiresAt": "2026-11-18T19:09:08Z"
+        },
+        {
+          "name": "install-nightly-toolchain.tar.xz",
+          "size": "191.47 MB",
+          "createdAt": "2026-08-12T10:29:25Z",
+          "expiresAt": "2026-11-10T07:31:36Z"
+        },
+        {
+          "name": "install-nightly-toolchain.tar.xz",
+          "size": "190.99 MB",
+          "createdAt": "2026-08-11T10:10:12Z",
+          "expiresAt": "2026-11-09T07:28:09Z"
+        },
+        {
+          "name": "install-nightly-toolchain.tar.xz",
+          "size": "190.95 MB",
+          "createdAt": "2026-08-10T09:07:51Z",
+          "expiresAt": "2026-11-08T07:33:01Z"
+        },
+        {
+          "name": "install-nightly-toolchain.tar.xz",
+          "size": "190.92 MB",
+          "createdAt": "2026-08-09T08:31:08Z",
+          "expiresAt": "2026-11-07T07:22:37Z"
+        },
+        {
+          "name": "install-nightly-toolchain.tar.xz",
+          "size": "190.95 MB",
+          "createdAt": "2026-08-08T10:03:58Z",
+          "expiresAt": "2026-11-06T07:21:42Z"
+        },
+        {
+          "name": "install-nightly-toolchain.tar.xz",
+          "size": "190.86 MB",
+          "createdAt": "2026-08-07T13:54:37Z",
+          "expiresAt": "2026-11-05T10:32:05Z"
+        }
+      ]
+    },
+    {
+      "name": "Zephyr Nightly with ELD",
+      "artifacts": [
+        {
+          "name": "zephyr-twister-results-qemu_x86_64",
+          "size": "975.61 KB",
+          "createdAt": "2026-08-20T10:46:45Z",
+          "expiresAt": "2026-08-22T10:46:44Z"
+        },
+        {
+          "name": "zephyr-eld-invocations-qemu_x86_64",
+          "size": "104.30 KB",
+          "createdAt": "2026-08-19T20:14:34Z",
+          "expiresAt": "2026-08-21T20:14:33Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_x86_64",
+          "size": "960.33 KB",
+          "createdAt": "2026-08-19T20:14:33Z",
+          "expiresAt": "2026-08-21T20:14:32Z"
+        },
+        {
+          "name": "zephyr-eld-invocations-qemu_x86_64",
+          "size": "26.92 KB",
+          "createdAt": "2026-08-19T17:52:04Z",
+          "expiresAt": "2026-08-21T17:52:03Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_x86_64",
+          "size": "287.40 KB",
+          "createdAt": "2026-08-19T17:52:03Z",
+          "expiresAt": "2026-08-21T17:52:01Z"
+        }
+      ]
+    },
+    {
+      "name": "Nightly LLVM Test Suite (x86_64)",
+      "artifacts": [
+        {
+          "name": "llvm-test-suite-results",
+          "size": "119.61 KB",
+          "createdAt": "2026-08-20T18:54:55Z",
+          "expiresAt": "2026-08-21T18:54:54Z"
+        }
+      ]
+    }
+  ]
+}
