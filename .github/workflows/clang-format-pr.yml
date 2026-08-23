@@ -1,0 +1,46 @@
+name: Clang Format Check
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  CLANG_FORMAT_VERSION: 22
+
+jobs:
+  clang-format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Install clang-format
+        run: |
+          set +e
+          UBUNTU_CODENAME="$(lsb_release -cs)"
+          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key \
+            | gpg --dearmor \
+            | sudo tee /usr/share/keyrings/llvm-archive-keyring.gpg >/dev/null
+          echo "deb [signed-by=/usr/share/keyrings/llvm-archive-keyring.gpg]" \
+            "http://apt.llvm.org/${UBUNTU_CODENAME}/" \
+            "llvm-toolchain-${UBUNTU_CODENAME}-${CLANG_FORMAT_VERSION} main" \
+            | sudo tee /etc/apt/sources.list.d/llvm.list >/dev/null
+          sudo apt-get update
+          sudo apt-get install -y "clang-format-${CLANG_FORMAT_VERSION}"
+          sudo ln -sf "/usr/bin/clang-format-${CLANG_FORMAT_VERSION}" /usr/local/bin/clang-format
+          sudo ln -sf "/usr/bin/git-clang-format-${CLANG_FORMAT_VERSION}" /usr/local/bin/git-clang-format
+          clang-format --version
+
+      - name: Check formatting of changed files
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set +e
+          source ./etc/bash/eld_clang_format_helpers.sh
+          eld_clang_format_check "${BASE_REF}"
+          check_rc=$?
+          exit "$check_rc"

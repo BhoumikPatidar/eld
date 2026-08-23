@@ -1,0 +1,130 @@
+//===- ARMRelocator.h------------------------------------------------------===//
+// Part of the eld Project, under the BSD License
+// See https://github.com/qualcomm/eld/LICENSE.txt for license information.
+// SPDX-License-Identifier: BSD-3-Clause
+//===----------------------------------------------------------------------===//
+//
+//                     The MCLinker Project
+//
+// This file is distributed under the University of Illinois Open Source
+// License. See LICENSE.TXT for details.
+//
+//===----------------------------------------------------------------------===//
+#ifndef TARGET_ARM_ARMRELOCATOR_H
+#define TARGET_ARM_ARMRELOCATOR_H
+
+#include "ARMLDBackend.h"
+#include "eld/Target/Relocator.h"
+#include <mutex>
+
+namespace eld {
+
+/** \class ARMRelocator
+ *  \brief ARMRelocator creates and destroys the ARM relocations.
+ *
+ */
+class ARMRelocator : public Relocator {
+public:
+  ARMRelocator(ARMGNULDBackend &pParent, LinkerConfig &pConfig,
+               Module &pModule);
+
+  Result applyRelocation(Relocation &pRelocation) override;
+
+  ARMGNULDBackend &getTarget() override { return m_Target; }
+
+  const ARMGNULDBackend &getTarget() const override { return m_Target; }
+
+  const char *getName(Relocation::Type pType) const override;
+
+  Size getSize(Relocation::Type pType) const override;
+
+  uint32_t getAddend(const Relocation *R) const override {
+    if (R->symInfo()->isSection())
+      return R->target();
+    return 0;
+  }
+
+  void adjustAddend(Relocation *R) const override {
+    if (R->symInfo()->isSection())
+      R->setTargetData(0);
+  }
+
+  /// scanRelocation - determine the empty entries are needed or not and create
+  /// the empty entries if needed.
+  /// For ARM, following entries are check to create:
+  /// - GOT entry (for .got section)
+  /// - PLT entry (for .plt section)
+  /// - dynamin relocation entries (for .rel.plt and .rel.dyn sections)
+  void scanRelocation(Relocation &pReloc, eld::IRBuilder &pBuilder,
+                      ELFSection &pSection, InputFile &pInputFile,
+                      CopyRelocs &) override;
+
+  ELFSegment *getSBRELSegment() const { return m_Target.getSBRELSegment(); }
+
+  void setSBRELSegment(ELFSegment *S) { m_Target.setSBRELSegment(S); }
+
+  uint32_t getNumRelocs() const override;
+
+  void computeTLSOffsets() override;
+
+  std::optional<uint64_t> getStaticTLSBlockVarOffset() const {
+    return StaticTLSBlockVarOffset;
+  }
+
+private:
+  bool isPICRelocTypeSupported(const Relocation &reloc) const override;
+  void scanLocalReloc(InputFile &pInput, Relocation::Type, Relocation &pReloc,
+                      const ELFSection &pSection);
+
+  void scanGlobalReloc(InputFile &pInput, Relocation::Type, Relocation &pReloc,
+                       eld::IRBuilder &pBuilder, ELFSection &pSection,
+                       CopyRelocs &);
+
+  /// Handle a relocation that references a non-preemptible STT_GNU_IFUNC
+  /// symbol in a static link. Classifies the relocation, records whether
+  /// the ifunc needs a GOT slot and/or has a direct reference, and
+  /// reserves an IRELATIVE PLT entry for it.
+  void handleScanForNonPreemptibleIFunc(Relocation &R, ELFObjectFile *Obj);
+
+  /// Returns true if the relocation is a control-flow (call/branch)
+  /// relocation.
+  bool isControlFlowRelocation(Relocation::Type relocType) const;
+
+  /// Returns true if the relocation is an absolute relocation designed for
+  /// the data section of the program.
+  bool isAbsDataRelocation(Relocation::Type relocType) const;
+
+  /// Returns true if the relocation is used for computing an absolute or a
+  /// PC-relative address using one or more instructions (e.g. a MOVW/MOVT
+  /// pair, or a REL32 / PREL31 word).
+  bool isAbsOrPCRELAddressInstrRelocation(Relocation::Type relocType) const;
+
+  /// Returns true if the relocation is a non-TLS instruction relocation
+  /// whose computation uses the GOT entry of the symbol.
+  bool isRegularGOTInstrRelocation(Relocation::Type relocType) const;
+
+  /// Returns true if the relocation would be valid against an STT_GNU_IFUNC
+  /// symbol in principle but cannot hold a PLT stub address, so eld does not
+  /// support it for an ifunc target. Used by
+  /// handleScanForNonPreemptibleIFunc to emit a diagnostic.
+  bool isUnsupportedIFuncRelocation(Relocation::Type relocType) const;
+
+  bool isDynamicRelocSupported(const Relocation &reloc) const override;
+
+  uint32_t relocType() const override { return llvm::ELF::SHT_REL; }
+
+  ARMGOT *getTLSModuleID(ResolveInfo *R, bool isStatic = false);
+
+private:
+  ARMGNULDBackend &m_Target;
+
+  /// The static TLS block contains an optional gap at the beginning,
+  /// that is followed by an optional alignment padding. The TLS variables
+  /// are stored after the alignment padding. This member stores the
+  /// offset in the static TLS block from where the variables start.
+  std::optional<uint64_t> StaticTLSBlockVarOffset;
+};
+
+} // namespace eld
+
+#endif
