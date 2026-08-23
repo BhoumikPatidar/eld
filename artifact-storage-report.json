@@ -1,13 +1,19 @@
 {
   "summary": {
-    "artifactCount": 17,
-    "activeArtifacts": 17,
-    "totalSize": "1.50 GB"
+    "artifactCount": 14,
+    "activeArtifacts": 14,
+    "totalSize": "1.69 GB"
   },
   "workflows": [
     {
       "name": "Nightly check",
       "artifacts": [
+        {
+          "name": "install-nightly-toolchain.tar.xz",
+          "size": "193.43 MB",
+          "createdAt": "2026-08-22T09:51:53Z",
+          "expiresAt": "2026-11-20T07:13:18Z"
+        },
         {
           "name": "install-nightly-toolchain.tar.xz",
           "size": "193.37 MB",
@@ -90,35 +96,6 @@
           "size": "19.17 KB",
           "createdAt": "2026-08-21T11:31:20Z",
           "expiresAt": "2026-08-23T11:31:20Z"
-        },
-        {
-          "name": "zephyr-twister-results-qemu_x86_64",
-          "size": "975.61 KB",
-          "createdAt": "2026-08-20T10:46:45Z",
-          "expiresAt": "2026-08-22T10:46:44Z"
-        }
-      ]
-    },
-    {
-      "name": "Nightly LLVM Test Suite (x86_64)",
-      "artifacts": [
-        {
-          "name": "llvm-test-suite-results",
-          "size": "196.66 KB",
-          "createdAt": "2026-08-21T12:14:45Z",
-          "expiresAt": "2026-08-22T12:14:44Z"
-        },
-        {
-          "name": "llvm-test-suite-results",
-          "size": "646.00 B",
-          "createdAt": "2026-08-21T11:57:44Z",
-          "expiresAt": "2026-08-22T11:57:43Z"
-        },
-        {
-          "name": "llvm-test-suite-results",
-          "size": "119.90 KB",
-          "createdAt": "2026-08-21T11:40:42Z",
-          "expiresAt": "2026-08-22T11:40:41Z"
         }
       ]
     }
