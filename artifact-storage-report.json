@@ -1,13 +1,19 @@
 {
   "summary": {
-    "artifactCount": 14,
-    "activeArtifacts": 14,
-    "totalSize": "1.69 GB"
+    "artifactCount": 18,
+    "activeArtifacts": 18,
+    "totalSize": "1.88 GB"
   },
   "workflows": [
     {
       "name": "Nightly check",
       "artifacts": [
+        {
+          "name": "install-nightly-toolchain.tar.xz",
+          "size": "193.47 MB",
+          "createdAt": "2026-08-23T10:14:49Z",
+          "expiresAt": "2026-11-21T07:14:38Z"
+        },
         {
           "name": "install-nightly-toolchain.tar.xz",
           "size": "193.43 MB",
@@ -70,32 +76,55 @@
         {
           "name": "zephyr-twister-results-qemu_riscv64",
           "size": "1.18 MB",
-          "createdAt": "2026-08-21T16:01:00Z",
-          "expiresAt": "2026-08-23T16:00:59Z"
-        },
-        {
-          "name": "zephyr-twister-results-qemu_riscv32",
-          "size": "925.05 KB",
-          "createdAt": "2026-08-21T15:37:00Z",
-          "expiresAt": "2026-08-23T15:36:59Z"
-        },
-        {
-          "name": "zephyr-twister-results-qemu_cortex_m3",
-          "size": "748.80 KB",
-          "createdAt": "2026-08-21T15:11:58Z",
-          "expiresAt": "2026-08-23T15:11:57Z"
+          "createdAt": "2026-08-23T23:25:05Z",
+          "expiresAt": "2026-08-25T23:25:03Z"
         },
         {
           "name": "zephyr-twister-results-qemu_cortex_a53",
-          "size": "847.94 KB",
-          "createdAt": "2026-08-21T14:39:04Z",
-          "expiresAt": "2026-08-23T14:39:03Z"
+          "size": "858.23 KB",
+          "createdAt": "2026-08-23T22:42:23Z",
+          "expiresAt": "2026-08-25T22:42:21Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_cortex_m3",
+          "size": "755.60 KB",
+          "createdAt": "2026-08-23T22:37:45Z",
+          "expiresAt": "2026-08-25T22:37:45Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_riscv32",
+          "size": "907.45 KB",
+          "createdAt": "2026-08-23T21:52:00Z",
+          "expiresAt": "2026-08-25T21:51:59Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_x86_64",
+          "size": "993.15 KB",
+          "createdAt": "2026-08-23T21:44:22Z",
+          "expiresAt": "2026-08-25T21:44:20Z"
         },
         {
           "name": "zephyr-twister-results-qemu_riscv32_xip",
-          "size": "19.17 KB",
-          "createdAt": "2026-08-21T11:31:20Z",
-          "expiresAt": "2026-08-23T11:31:20Z"
+          "size": "19.58 KB",
+          "createdAt": "2026-08-23T18:58:46Z",
+          "expiresAt": "2026-08-25T18:58:46Z"
+        }
+      ]
+    },
+    {
+      "name": "Nightly LLVM Test Suite (x86_64)",
+      "artifacts": [
+        {
+          "name": "llvm-test-suite-results",
+          "size": "119.85 KB",
+          "createdAt": "2026-08-23T17:39:44Z",
+          "expiresAt": "2026-08-24T17:39:43Z"
+        },
+        {
+          "name": "llvm-test-suite-results",
+          "size": "158.42 KB",
+          "createdAt": "2026-08-23T17:04:46Z",
+          "expiresAt": "2026-08-24T17:04:45Z"
         }
       ]
     }
