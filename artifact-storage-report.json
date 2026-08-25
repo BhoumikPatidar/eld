@@ -1,7 +1,7 @@
 {
   "summary": {
-    "artifactCount": 18,
-    "activeArtifacts": 18,
+    "artifactCount": 22,
+    "activeArtifacts": 22,
     "totalSize": "1.88 GB"
   },
   "workflows": [
@@ -75,6 +75,42 @@
       "artifacts": [
         {
           "name": "zephyr-twister-results-qemu_riscv64",
+          "size": "1.19 MB",
+          "createdAt": "2026-08-24T18:21:40Z",
+          "expiresAt": "2026-08-26T18:21:39Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_riscv32",
+          "size": "924.80 KB",
+          "createdAt": "2026-08-24T17:40:32Z",
+          "expiresAt": "2026-08-26T17:40:31Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_cortex_a53",
+          "size": "856.63 KB",
+          "createdAt": "2026-08-24T17:16:35Z",
+          "expiresAt": "2026-08-26T17:16:34Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_x86_64",
+          "size": "994.30 KB",
+          "createdAt": "2026-08-24T17:02:55Z",
+          "expiresAt": "2026-08-26T17:02:53Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_cortex_m3",
+          "size": "737.06 KB",
+          "createdAt": "2026-08-24T16:18:04Z",
+          "expiresAt": "2026-08-26T16:18:03Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_riscv32_xip",
+          "size": "19.36 KB",
+          "createdAt": "2026-08-24T14:10:45Z",
+          "expiresAt": "2026-08-26T14:10:44Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_riscv64",
           "size": "1.18 MB",
           "createdAt": "2026-08-23T23:25:05Z",
           "expiresAt": "2026-08-25T23:25:03Z"
@@ -108,23 +144,6 @@
           "size": "19.58 KB",
           "createdAt": "2026-08-23T18:58:46Z",
           "expiresAt": "2026-08-25T18:58:46Z"
-        }
-      ]
-    },
-    {
-      "name": "Nightly LLVM Test Suite (x86_64)",
-      "artifacts": [
-        {
-          "name": "llvm-test-suite-results",
-          "size": "119.85 KB",
-          "createdAt": "2026-08-23T17:39:44Z",
-          "expiresAt": "2026-08-24T17:39:43Z"
-        },
-        {
-          "name": "llvm-test-suite-results",
-          "size": "158.42 KB",
-          "createdAt": "2026-08-23T17:04:46Z",
-          "expiresAt": "2026-08-24T17:04:45Z"
         }
       ]
     }
