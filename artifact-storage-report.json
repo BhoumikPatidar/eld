@@ -1,7 +1,7 @@
 {
   "summary": {
-    "artifactCount": 16,
-    "activeArtifacts": 16,
+    "artifactCount": 15,
+    "activeArtifacts": 15,
     "totalSize": "1.88 GB"
   },
   "workflows": [
@@ -74,40 +74,34 @@
       "name": "Zephyr Nightly with ELD",
       "artifacts": [
         {
-          "name": "zephyr-twister-results-qemu_riscv64",
-          "size": "1.19 MB",
-          "createdAt": "2026-08-24T18:21:40Z",
-          "expiresAt": "2026-08-26T18:21:39Z"
+          "name": "zephyr-twister-results-qemu_x86_64",
+          "size": "996.11 KB",
+          "createdAt": "2026-08-27T10:40:28Z",
+          "expiresAt": "2026-08-29T10:40:27Z"
         },
         {
           "name": "zephyr-twister-results-qemu_riscv32",
-          "size": "924.80 KB",
-          "createdAt": "2026-08-24T17:40:32Z",
-          "expiresAt": "2026-08-26T17:40:31Z"
+          "size": "912.60 KB",
+          "createdAt": "2026-08-27T10:38:42Z",
+          "expiresAt": "2026-08-29T10:38:41Z"
         },
         {
           "name": "zephyr-twister-results-qemu_cortex_a53",
-          "size": "856.63 KB",
-          "createdAt": "2026-08-24T17:16:35Z",
-          "expiresAt": "2026-08-26T17:16:34Z"
-        },
-        {
-          "name": "zephyr-twister-results-qemu_x86_64",
-          "size": "994.30 KB",
-          "createdAt": "2026-08-24T17:02:55Z",
-          "expiresAt": "2026-08-26T17:02:53Z"
+          "size": "836.86 KB",
+          "createdAt": "2026-08-27T10:31:54Z",
+          "expiresAt": "2026-08-29T10:31:52Z"
         },
         {
           "name": "zephyr-twister-results-qemu_cortex_m3",
-          "size": "737.06 KB",
-          "createdAt": "2026-08-24T16:18:04Z",
-          "expiresAt": "2026-08-26T16:18:03Z"
+          "size": "747.00 KB",
+          "createdAt": "2026-08-27T10:06:51Z",
+          "expiresAt": "2026-08-29T10:06:50Z"
         },
         {
           "name": "zephyr-twister-results-qemu_riscv32_xip",
-          "size": "19.36 KB",
-          "createdAt": "2026-08-24T14:10:45Z",
-          "expiresAt": "2026-08-26T14:10:44Z"
+          "size": "19.65 KB",
+          "createdAt": "2026-08-27T07:54:10Z",
+          "expiresAt": "2026-08-29T07:54:09Z"
         }
       ]
     }
