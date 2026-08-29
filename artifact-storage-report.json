@@ -1,8 +1,8 @@
 {
   "summary": {
-    "artifactCount": 23,
-    "activeArtifacts": 23,
-    "totalSize": "1.88 GB"
+    "artifactCount": 45,
+    "activeArtifacts": 45,
+    "totalSize": "1.89 GB"
   },
   "workflows": [
     {
@@ -74,6 +74,144 @@
       "name": "Zephyr Nightly with ELD",
       "artifacts": [
         {
+          "name": "zephyr-twister-results-qemu_riscv64",
+          "size": "1.19 MB",
+          "createdAt": "2026-08-28T22:54:38Z",
+          "expiresAt": "2026-08-30T22:54:37Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_cortex_m3",
+          "size": "781.43 KB",
+          "createdAt": "2026-08-28T21:50:17Z",
+          "expiresAt": "2026-08-30T21:50:16Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_riscv32",
+          "size": "924.12 KB",
+          "createdAt": "2026-08-28T21:30:55Z",
+          "expiresAt": "2026-08-30T21:30:55Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_x86_64",
+          "size": "989.50 KB",
+          "createdAt": "2026-08-28T20:40:01Z",
+          "expiresAt": "2026-08-30T20:40:00Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_cortex_a53",
+          "size": "835.00 KB",
+          "createdAt": "2026-08-28T20:04:30Z",
+          "expiresAt": "2026-08-30T20:04:29Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_riscv32_xip",
+          "size": "19.59 KB",
+          "createdAt": "2026-08-28T17:53:18Z",
+          "expiresAt": "2026-08-30T17:53:17Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_cortex_a53",
+          "size": "147.85 KB",
+          "createdAt": "2026-08-28T17:46:24Z",
+          "expiresAt": "2026-08-30T17:46:22Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_riscv32",
+          "size": "126.87 KB",
+          "createdAt": "2026-08-28T17:46:24Z",
+          "expiresAt": "2026-08-30T17:46:22Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_x86_64",
+          "size": "164.47 KB",
+          "createdAt": "2026-08-28T17:46:24Z",
+          "expiresAt": "2026-08-30T17:46:23Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_cortex_m3",
+          "size": "120.27 KB",
+          "createdAt": "2026-08-28T17:46:23Z",
+          "expiresAt": "2026-08-30T17:46:23Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_riscv64",
+          "size": "136.74 KB",
+          "createdAt": "2026-08-28T17:46:23Z",
+          "expiresAt": "2026-08-30T17:46:22Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_riscv64",
+          "size": "160.88 KB",
+          "createdAt": "2026-08-28T17:46:21Z",
+          "expiresAt": "2026-08-30T17:46:19Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_riscv32",
+          "size": "162.31 KB",
+          "createdAt": "2026-08-28T17:46:20Z",
+          "expiresAt": "2026-08-30T17:46:19Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_cortex_a53",
+          "size": "176.98 KB",
+          "createdAt": "2026-08-28T17:46:19Z",
+          "expiresAt": "2026-08-30T17:46:17Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_cortex_m3",
+          "size": "201.19 KB",
+          "createdAt": "2026-08-28T17:46:19Z",
+          "expiresAt": "2026-08-30T17:46:18Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_riscv32_xip",
+          "size": "19.14 KB",
+          "createdAt": "2026-08-28T17:20:05Z",
+          "expiresAt": "2026-08-30T17:20:05Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_riscv32_xip",
+          "size": "19.57 KB",
+          "createdAt": "2026-08-28T16:57:43Z",
+          "expiresAt": "2026-08-30T16:57:43Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_x86_64",
+          "size": "23.84 KB",
+          "createdAt": "2026-08-28T16:57:09Z",
+          "expiresAt": "2026-08-30T16:57:09Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_riscv64",
+          "size": "1.07 MB",
+          "createdAt": "2026-08-28T16:48:25Z",
+          "expiresAt": "2026-08-30T16:48:23Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_riscv32",
+          "size": "931.04 KB",
+          "createdAt": "2026-08-28T15:03:13Z",
+          "expiresAt": "2026-08-30T15:03:12Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_cortex_a53",
+          "size": "854.07 KB",
+          "createdAt": "2026-08-28T14:03:56Z",
+          "expiresAt": "2026-08-30T14:03:56Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_x86_64",
+          "size": "997.01 KB",
+          "createdAt": "2026-08-28T13:45:29Z",
+          "expiresAt": "2026-08-30T13:45:29Z"
+        },
+        {
+          "name": "zephyr-twister-results-qemu_cortex_m3",
+          "size": "768.41 KB",
+          "createdAt": "2026-08-28T13:35:17Z",
+          "expiresAt": "2026-08-30T13:35:15Z"
+        },
+        {
           "name": "zephyr-twister-results-qemu_riscv32_xip",
           "size": "19.59 KB",
           "createdAt": "2026-08-28T10:53:20Z",
@@ -144,12 +282,6 @@
           "size": "747.00 KB",
           "createdAt": "2026-08-27T10:06:51Z",
           "expiresAt": "2026-08-29T10:06:50Z"
-        },
-        {
-          "name": "zephyr-twister-results-qemu_riscv32_xip",
-          "size": "19.65 KB",
-          "createdAt": "2026-08-27T07:54:10Z",
-          "expiresAt": "2026-08-29T07:54:09Z"
         }
       ]
     }
