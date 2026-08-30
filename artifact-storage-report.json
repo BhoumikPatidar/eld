@@ -1,7 +1,7 @@
 {
   "summary": {
-    "artifactCount": 45,
-    "activeArtifacts": 45,
+    "artifactCount": 34,
+    "activeArtifacts": 34,
     "totalSize": "1.89 GB"
   },
   "workflows": [
@@ -216,72 +216,6 @@
           "size": "19.59 KB",
           "createdAt": "2026-08-28T10:53:20Z",
           "expiresAt": "2026-08-30T10:53:19Z"
-        },
-        {
-          "name": "zephyr-twister-results-qemu_x86_64",
-          "size": "994.67 KB",
-          "createdAt": "2026-08-27T15:44:30Z",
-          "expiresAt": "2026-08-29T15:44:29Z"
-        },
-        {
-          "name": "zephyr-twister-results-qemu_riscv64",
-          "size": "1.19 MB",
-          "createdAt": "2026-08-27T13:42:25Z",
-          "expiresAt": "2026-08-29T13:42:23Z"
-        },
-        {
-          "name": "zephyr-twister-results-qemu_cortex_a53",
-          "size": "23.33 KB",
-          "createdAt": "2026-08-27T12:57:52Z",
-          "expiresAt": "2026-08-29T12:57:50Z"
-        },
-        {
-          "name": "zephyr-twister-results-qemu_cortex_m3",
-          "size": "26.97 KB",
-          "createdAt": "2026-08-27T12:57:45Z",
-          "expiresAt": "2026-08-29T12:57:44Z"
-        },
-        {
-          "name": "zephyr-twister-results-qemu_riscv64",
-          "size": "25.41 KB",
-          "createdAt": "2026-08-27T12:57:41Z",
-          "expiresAt": "2026-08-29T12:57:40Z"
-        },
-        {
-          "name": "zephyr-twister-results-qemu_riscv32",
-          "size": "22.44 KB",
-          "createdAt": "2026-08-27T12:57:17Z",
-          "expiresAt": "2026-08-29T12:57:16Z"
-        },
-        {
-          "name": "zephyr-twister-results-qemu_riscv32_xip",
-          "size": "17.76 KB",
-          "createdAt": "2026-08-27T12:57:12Z",
-          "expiresAt": "2026-08-29T12:57:12Z"
-        },
-        {
-          "name": "zephyr-twister-results-qemu_x86_64",
-          "size": "996.11 KB",
-          "createdAt": "2026-08-27T10:40:28Z",
-          "expiresAt": "2026-08-29T10:40:27Z"
-        },
-        {
-          "name": "zephyr-twister-results-qemu_riscv32",
-          "size": "912.60 KB",
-          "createdAt": "2026-08-27T10:38:42Z",
-          "expiresAt": "2026-08-29T10:38:41Z"
-        },
-        {
-          "name": "zephyr-twister-results-qemu_cortex_a53",
-          "size": "836.86 KB",
-          "createdAt": "2026-08-27T10:31:54Z",
-          "expiresAt": "2026-08-29T10:31:52Z"
-        },
-        {
-          "name": "zephyr-twister-results-qemu_cortex_m3",
-          "size": "747.00 KB",
-          "createdAt": "2026-08-27T10:06:51Z",
-          "expiresAt": "2026-08-29T10:06:50Z"
         }
       ]
     }
