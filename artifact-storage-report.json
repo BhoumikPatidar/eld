@@ -1,8 +1,8 @@
 {
   "summary": {
-    "artifactCount": 14,
-    "activeArtifacts": 14,
-    "totalSize": "1.88 GB"
+    "artifactCount": 10,
+    "activeArtifacts": 10,
+    "totalSize": "1.87 GB"
   },
   "workflows": [
     {
@@ -67,35 +67,6 @@
           "size": "190.86 MB",
           "createdAt": "2026-08-07T13:54:37Z",
           "expiresAt": "2026-11-05T10:32:05Z"
-        }
-      ]
-    },
-    {
-      "name": "Zephyr Nightly with ELD",
-      "artifacts": [
-        {
-          "name": "zephyr-twister-results-qemu_riscv64",
-          "size": "1.18 MB",
-          "createdAt": "2026-08-31T13:36:29Z",
-          "expiresAt": "2026-09-02T13:36:27Z"
-        },
-        {
-          "name": "zephyr-twister-results-qemu_cortex_m3",
-          "size": "781.20 KB",
-          "createdAt": "2026-08-31T12:49:44Z",
-          "expiresAt": "2026-09-02T12:49:42Z"
-        },
-        {
-          "name": "zephyr-twister-results-qemu_cortex_a53",
-          "size": "858.38 KB",
-          "createdAt": "2026-08-31T12:48:12Z",
-          "expiresAt": "2026-09-02T12:48:10Z"
-        },
-        {
-          "name": "zephyr-twister-results-qemu_riscv32",
-          "size": "929.93 KB",
-          "createdAt": "2026-08-31T12:47:36Z",
-          "expiresAt": "2026-09-02T12:47:35Z"
         }
       ]
     }
