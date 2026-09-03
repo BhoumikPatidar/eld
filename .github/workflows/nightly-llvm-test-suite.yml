@@ -49,6 +49,15 @@ jobs:
       - name: Fetch nightly ELD
         uses: ./llvm-project/llvm/tools/eld/.github/workflows/FetchNightlyToolset
 
+      - name: Configure toolchain runtime libraries
+        shell: bash
+        run: |
+          set -euo pipefail
+          ELD_BIN="$(command -v ld.eld)"
+          LIB_DIR="$(cd "$(dirname "$ELD_BIN")/../lib" && pwd)"
+          RT_LIB_DIR="${LIB_DIR}/x86_64-unknown-linux-gnu"
+          echo "LD_LIBRARY_PATH=${LIB_DIR}:${RT_LIB_DIR}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" >> "$GITHUB_ENV"
+
       - name: Clone LLVM test suite
         run: |
           git clone --depth 1 https://github.com/llvm/llvm-test-suite.git
@@ -56,8 +65,6 @@ jobs:
       - name: Configure test suite
         run: |
           ELD_BIN=$(which ld.eld)
-          LIB_DIR="$(dirname "$ELD_BIN")/../lib"
-          RT_LIB_DIR="$LIB_DIR/x86_64-unknown-linux-gnu"
           # TEST_SUITE_SUBDIRS is left unset, so llvm-test-suite/CMakeLists.txt
           # runs its own auto-discovery.
           # That resolves to:
@@ -94,7 +101,7 @@ jobs:
             -DCMAKE_CXX_COMPILER=$(which clang++) \
             -DCMAKE_C_FLAGS="--ld-path=$ELD_BIN" \
             -DCMAKE_CXX_FLAGS="--ld-path=$ELD_BIN -stdlib=libc++" \
-            -DCMAKE_EXE_LINKER_FLAGS="--ld-path=$ELD_BIN -stdlib=libc++ -Wl,-rpath,$LIB_DIR -Wl,-rpath,$RT_LIB_DIR" \
+            -DCMAKE_EXE_LINKER_FLAGS="--ld-path=$ELD_BIN -stdlib=libc++" \
             -DTEST_SUITE_RUN_TYPE=nightly
 
       - name: Build test suite
