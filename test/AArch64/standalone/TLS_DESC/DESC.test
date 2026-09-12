@@ -1,0 +1,16 @@
+RUN: %clangas %clangasopts -filetype obj -target-cpu generic -target-feature +neon -mrelax-all %p/Inputs/t.s -o %t.o
+RUN: %link %linkopts  -march aarch64 -static %t.o -z max-page-size=0x1000 -o %t.out
+RUN: %objdump -d %t.out | %filecheck %s
+
+# Static linking converts TLSDESC to IE inline (movz/movk/nop/nop) — no GOT
+# access needed, TP-relative offset is encoded directly in the instructions.
+#CHECK: {{.*}} <_test_tls_desc>:
+#CHECK: {{.*}} movz    x0, #0x0, lsl #16
+#CHECK: {{.*}} movk    x0, #0x10
+#CHECK: {{.*}} nop
+#CHECK: {{.*}} nop
+#CHECK: {{.*}} <_test_tls_desc_local>:
+#CHECK: {{.*}} movz    x0, #0x0, lsl #16
+#CHECK: {{.*}} movk    x0, #0x14
+#CHECK: {{.*}} nop
+#CHECK: {{.*}} nop

@@ -1,0 +1,393 @@
+//===- RISCVLDBackend.h----------------------------------------------------===//
+// Part of the eld Project, under the BSD License
+// See https://github.com/qualcomm/eld/LICENSE.txt for license information.
+// SPDX-License-Identifier: BSD-3-Clause
+//===----------------------------------------------------------------------===//
+
+//===----------------------------------------------------------------------===//
+#ifndef RISCV_LDBACKEND_H
+#define RISCV_LDBACKEND_H
+
+#include "RISCVGOT.h"
+#include "eld/Config/LinkerConfig.h"
+#include "eld/Fragment/RegionFragmentEx.h"
+#include "eld/Object/ObjectBuilder.h"
+#include "eld/Readers/ELFSection.h"
+#include "eld/SymbolResolver/IRBuilder.h"
+#include "eld/Target/GNULDBackend.h"
+#include "llvm/ADT/DenseSet.h"
+#include <unordered_set>
+
+namespace eld {
+
+class LinkerConfig;
+class RISCVInfo;
+class RISCVAttributeFragment;
+class RISCVTableJumpFragment;
+class RISCVPLT;
+class RISCVRelaxationStats;
+
+//===----------------------------------------------------------------------===//
+/// RISCVLDBackend - linker backend of RISCV target of GNU ELF format
+///
+class RISCVLDBackend : public GNULDBackend {
+public:
+  RISCVLDBackend(Module &pModule, RISCVInfo *pInfo);
+
+  ~RISCVLDBackend();
+
+  void initializeAttributes() override;
+
+  /// initRelocator - create and initialize Relocator.
+  bool initRelocator() override;
+
+  /// getRelocator - return relocator.
+  Relocator *getRelocator() const override;
+
+  void initTargetSections(ObjectBuilder &pBuilder) override;
+
+  void initDynamicSections(ELFObjectFile &) override;
+
+  void initPatchSections(ELFObjectFile &) override;
+
+  void initTargetSymbols() override;
+
+  bool initBRIslandFactory() override;
+
+  bool initStubFactory() override;
+
+  bool hasRelax(const Relocation &R) const {
+    return m_RelocsWithRelax.find(&R) != m_RelocsWithRelax.end();
+  }
+
+  void preRelaxation() override;
+
+  void mayBeRelax(int pass, bool &pFinished) override;
+
+  /// getTargetSectionOrder - compute the layout order of RISCV target section
+  unsigned int getTargetSectionOrder(const ELFSection &pSectHdr) const override;
+
+  /// finalizeTargetSymbols - finalize the symbol value
+  bool finalizeTargetSymbols() override;
+
+  void reserveTargetDynamicEntries() override;
+  void applyTargetDynamicEntries() override;
+
+  void evaluateTargetSymbolsBeforeRelaxation() override;
+
+  Stub *getBranchIslandStub(Relocation *pReloc,
+                            int64_t pTargetValue) const override {
+    return nullptr;
+  }
+
+  bool validateArchOpts() const override;
+
+  void doPreLayout() override;
+
+  bool handleRelocation(ELFSection *pSection, Relocation::Type pType,
+                        LDSymbol &pSym, uint32_t pOffset,
+                        Relocation::Address pAddend) override;
+
+  // Handle the relocations that handleRelocation() could not process.
+  bool handlePendingRelocations(ELFSection *S) override;
+
+  virtual bool readSection(InputFile &pInput, ELFSection *S) override;
+
+  bool shouldIgnoreRelocSync(Relocation *pReloc) const override;
+
+  void translatePseudoRelocation(Relocation *reloc);
+
+  Relocation::Type
+      getRemappedInternalRelocationType(Relocation::Type) const override;
+
+  Relocation::Type getCopyRelType() const override;
+
+  // ---  GOT Support ------
+  RISCVGOT *createGOT(GOT::GOTType T, ELFObjectFile *Obj, ResolveInfo *sym);
+
+  void recordGOT(ResolveInfo *, RISCVGOT *);
+
+  void recordGOTPLT(ResolveInfo *, RISCVGOT *);
+
+  RISCVGOT *findEntryInGOT(ResolveInfo *) const;
+
+  bool addSymbolToOutput(ResolveInfo *pInfo) override;
+
+  uint64_t getValueForDiscardedRelocations(const Relocation *R) const override;
+
+  // ----------------------- GC override ----------------------------
+  std::optional<bool>
+  shouldProcessSectionForGC(const ELFSection &pSec) const override;
+
+  // ---------------------  PLT Support ---------------------------
+  RISCVPLT *createPLT(ELFObjectFile *Obj, ResolveInfo *sym,
+                      bool isIRelative = false);
+
+  void recordPLT(ResolveInfo *, RISCVPLT *);
+
+  RISCVPLT *findEntryInPLT(ResolveInfo *) const;
+
+  // ---------------------  Dynamic relocation support ------------
+  bool hasSymInfo(const Relocation *X) const override {
+    if (X->type() == llvm::ELF::R_RISCV_RELATIVE)
+      return false;
+    if (X->symInfo() && X->symInfo()->binding() == ResolveInfo::Local)
+      return false;
+    return true;
+  }
+
+  DynRelocType getDynRelocType(const Relocation *X) const override {
+    // RISCV uses word deposits as GLOB_DAT on
+    // other targets
+    if (X->type() == llvm::ELF::R_RISCV_32 ||
+        X->type() == llvm::ELF::R_RISCV_64)
+      return DynRelocType::GLOB_DAT;
+    if (X->type() == llvm::ELF::R_RISCV_JUMP_SLOT)
+      return DynRelocType::JMP_SLOT;
+    if (X->type() == llvm::ELF::R_RISCV_RELATIVE)
+      return DynRelocType::RELATIVE;
+    if (X->type() == llvm::ELF::R_RISCV_IRELATIVE)
+      return DynRelocType::RELATIVE;
+    if (X->type() == llvm::ELF::R_RISCV_TLS_DTPMOD32 ||
+        X->type() == llvm::ELF::R_RISCV_TLS_DTPMOD64) {
+      if (X->symInfo() && X->symInfo()->binding() == ResolveInfo::Local)
+        return DynRelocType::DTPMOD_LOCAL;
+      return DynRelocType::DTPMOD_GLOBAL;
+    }
+    if (X->type() == llvm::ELF::R_RISCV_TLS_DTPREL32 ||
+        X->type() == llvm::ELF::R_RISCV_TLS_DTPREL64) {
+      if (X->symInfo() && X->symInfo()->binding() == ResolveInfo::Local)
+        return DynRelocType::DTPREL_LOCAL;
+      return DynRelocType::DTPREL_GLOBAL;
+    }
+    if (X->type() == llvm::ELF::R_RISCV_TLS_TPREL32 ||
+        X->type() == llvm::ELF::R_RISCV_TLS_TPREL64) {
+      if (X->symInfo() && X->symInfo()->binding() == ResolveInfo::Local)
+        return DynRelocType::TPREL_LOCAL;
+      return DynRelocType::TPREL_GLOBAL;
+    }
+    if (X->type() == llvm::ELF::R_RISCV_TLSDESC) {
+      if (X->symInfo() && (X->symInfo()->binding() == ResolveInfo::Local ||
+                           X->symInfo()->visibility() != ResolveInfo::Default))
+        return DynRelocType::TLSDESC_LOCAL;
+      return DynRelocType::TLSDESC_GLOBAL;
+    }
+    return DynRelocType::DEFAULT;
+  }
+
+  std::size_t PLTEntriesCount() const override { return m_PLTMap.size(); }
+
+  std::size_t GOTEntriesCount() const override { return m_GOTMap.size(); }
+
+  void doCreateProgramHdrs() override;
+
+  int numReservedSegments() const override;
+
+  void addTargetSpecificSegments() override;
+
+  void setDefaultConfigs() override;
+
+  Relocation *getGroupReloc(const Relocation &R) const {
+    auto reloc = m_GroupRelocs.find(&R);
+    if (reloc == m_GroupRelocs.end())
+      return nullptr;
+    return reloc->second;
+  }
+
+  Relocation *getBaseReloc(const Relocation &R) const {
+    auto reloc = m_BaseRelocs.find(&R);
+    if (reloc == m_BaseRelocs.end())
+      return nullptr;
+    return reloc->second;
+  }
+
+  const Relocation *
+  getNewBaseForTLSDESCRelaxation(const Relocation &BaseReloc) const {
+    auto It = m_HiToIELoadBase.find(&BaseReloc);
+    if (It != m_HiToIELoadBase.end())
+      return It->second;
+    return nullptr;
+  }
+
+  void setNewBaseForTLSDESCRelaxation(const Relocation &R) {
+    const Relocation *HIReloc = getBaseReloc(R);
+    m_HiToIELoadBase[HIReloc] = &R;
+  }
+
+  // Get the value of the symbol, using the PLT slot if one exists.
+  Relocation::Address getSymbolValuePLT(const Relocation &R);
+  Relocation::Address getSymbolValuePLT(ResolveInfo &Sym);
+
+  // Interpret a raw address as a signed value at the target's pointer width.
+  // On a 32-bit target, truncate to 32 bits (applying the same wraparound the
+  // processor would) and then sign-extend for range checks; on a 64-bit target
+  // the address is already the right width.
+  int64_t getSignedAddress(uint64_t addr) const {
+    return config().targets().is32Bits() ? llvm::SignExtend64<32>(addr)
+                                         : (int64_t)addr;
+  }
+
+private:
+  void initTableJump();
+
+  // This is `handleRelocation` for internal RISC-V relocations IDs.
+  bool handleVendorRelocation(ELFSection *pSection,
+                              Relocation::Type pInternalType, LDSymbol &pSym,
+                              uint32_t pOffset, Relocation::Address pAddend);
+
+  void relaxDeleteBytes(llvm::StringRef Name, RegionFragmentEx &Region,
+                        uint64_t Offset, unsigned NumBytes,
+                        llvm::StringRef SymbolName);
+
+  void reportMissedRelaxation(llvm::StringRef Name, RegionFragmentEx &Region,
+                              uint64_t Offset, unsigned NumBytes,
+                              llvm::StringRef SymbolName);
+
+  bool isGOTReloc(const Relocation &reloc) const;
+
+  bool doRelaxationCall(Relocation *R);
+  bool doRelaxationJal(Relocation *R);
+  bool doRelaxationQCCall(Relocation *R);
+
+  bool doRelaxationLui(Relocation *R, Relocation::DWord G);
+  bool doRelaxationQCELi(Relocation *R, Relocation::DWord G);
+
+  bool doRelaxationQCAccess32(Relocation *QCELiReloc, Relocation *AccessReloc,
+                              Relocation::DWord G);
+  bool doRelaxationQCAccess16(Relocation *QCELiReloc, Relocation *AccessReloc,
+                              Relocation::DWord G);
+
+  // Decoded load/store instruction info for QC ACCESS relaxation.
+  struct QCAccess {
+    // Loads come first so isLoad() is a cheap comparison.
+    enum class Operation { Unknown, Lb, Lbu, Lh, Lhu, Lw, Sb, Sh, Sw };
+    Operation op = Operation::Unknown;
+    uint32_t size = 0;  // access instruction size (in bytes)
+    unsigned reg = -1;  // destination (load) or source data (store) register
+    int64_t offset = 0; // immediate offset in the original access instruction
+
+    bool isValid() const { return op != Operation::Unknown; }
+    bool isLoad() const { return op <= Operation::Lw; }
+
+    uint32_t build32Bit(unsigned base_reg) const;
+    uint64_t build48Bit(unsigned base_reg) const;
+  };
+  bool doRelaxationQCAccessCommon(Relocation *QCELiReloc,
+                                  Relocation *AccessReloc, Relocation::DWord G,
+                                  QCAccess access);
+
+  bool doRelaxationAlign(Relocation *R);
+
+  bool doRelaxationPC(Relocation *R, Relocation::DWord G);
+  bool doRelaxationGOT(Relocation &R);
+
+  bool doRelaxationTLSDESC(Relocation &R, bool Relax);
+
+  /// getRelEntrySize - the size in BYTE of rela type relocation
+  size_t getRelEntrySize() override { return 0; }
+
+  /// getRelaEntrySize - the size in BYTE of rela type relocation
+  size_t getRelaEntrySize() override {
+    if (config().targets().is32Bits())
+      return 12;
+    return 24;
+  }
+
+  uint64_t maxBranchOffset() override { return 0; }
+
+  bool checkABIStr(llvm::StringRef abi) const;
+
+  bool finalizeScanRelocations() override;
+
+  template <unsigned N>
+  bool fitsInGP(Relocation::DWord, Relocation::DWord, Fragment *frag,
+                ELFSection *TargetSection, size_t) const;
+
+  bool DoesOverrideMerge(ELFSection *pSection) const override;
+
+  ELFSection *mergeSection(ELFSection *pSection) override;
+
+  void recordRelaxationStats(ELFSection &, size_t NumBytesDeleted,
+                             size_t NumBytesNotDeleted);
+
+  /// postProcessing - Backend can do any needed modification in the final stage
+  eld::Expected<void> postProcessing(llvm::FileOutputBuffer &pOutput) override;
+
+  const llvm::SmallVectorImpl<const Relocation *> *
+  getBaseRelocRefs(const Relocation &R) const {
+    auto Refs = m_BaseRelocRefs.find(&R);
+    if (Refs == m_BaseRelocRefs.end())
+      return nullptr;
+    return &Refs->second;
+  }
+
+  void setRelocGOTLoadRelaxed(const Relocation *R) {
+    m_RelaxedGOTLoadRelocs.insert(R);
+  }
+
+  bool relocWasGOTLoadRelaxed(const Relocation *R) const {
+    return m_RelaxedGOTLoadRelocs.count(R);
+  }
+
+  bool allGOTLOsRelaxable(const Relocation &HIReloc) const;
+
+private:
+  ELFSection *createGOTSection(InputFile &InputFile);
+  ELFSection *createGOTPLTSection(InputFile &InputFile);
+  ELFSection *createPLTSection(InputFile &InputFile);
+
+  void defineGOTSymbol(Fragment &);
+
+  /// A map to track the first relocation at one location. Multiple relocations
+  /// at one location should be applied consecutively, and not override each
+  /// other. Since we are caching the value in the relocation object, it is
+  /// important to update the cached value in the very first relocation in a
+  /// group.
+  llvm::DenseMap<const Relocation *, Relocation *> m_GroupRelocs;
+
+  /// A map to keep track of the relocation that defines the base address for
+  /// relative relocations. This is a concept in RISC-V and applies to
+  /// relocations consisting of a HI20 and LO12 pairs.
+  llvm::DenseMap<const Relocation *, Relocation *> m_BaseRelocs;
+
+  /// Identify relocations that have an associated R_RISCV_RELAX.
+  llvm::DenseSet<const Relocation *> m_RelocsWithRelax;
+
+private:
+  /// RISCV Attribute Section
+  ELFSection *m_pRISCVAttributeSection = nullptr;
+  ELFSection *m_pRISCVTableJumpSection = nullptr;
+  /// RISCV Attribute Fragment
+  RISCVAttributeFragment *AttributeFragment = nullptr;
+  RISCVTableJumpFragment *TableJumpFragment = nullptr;
+  bool TableJumpInitialized = false;
+  LDSymbol *m_pJvtBase = nullptr;
+
+  llvm::DenseMap<ResolveInfo *, RISCVGOT *> m_GOTMap;
+  llvm::DenseMap<ResolveInfo *, RISCVGOT *> m_GOTPLTMap;
+  llvm::DenseMap<ResolveInfo *, RISCVPLT *> m_PLTMap;
+  std::vector<ResolveInfo *> m_LabeledSymbols;
+  std::unordered_set<Relocation *> m_DisableGPRelocs;
+  Relocator *m_pRelocator = nullptr;
+  LDSymbol *m_pGlobalPointer = nullptr;
+  ELFSection *m_GlobalPointerSection = nullptr;
+  ELFSection *m_psdata = nullptr;
+  std::unordered_map<void *, LinkStats *> m_Stats;
+  RISCVRelaxationStats *m_ModuleStats = nullptr;
+  std::unordered_map<ELFSection *, std::unordered_map<uint32_t, Relocation *>>
+      SectionRelocMap;
+
+  // A map from HI relocations to the relocations that should be used as a base
+  // address for the load instruction during TLSDESC to IE optimization.
+  std::unordered_map<const Relocation *, const Relocation *> m_HiToIELoadBase;
+
+  // A map to keep track of all relocations referencing a particular
+  // base relocation. This is effectively a reverse-mapping of `m_BaseRelocs`.
+  llvm::DenseMap<const Relocation *, llvm::SmallVector<const Relocation *, 1>>
+      m_BaseRelocRefs;
+
+  llvm::DenseSet<const Relocation *> m_RelaxedGOTLoadRelocs;
+};
+} // namespace eld
+
+#endif
