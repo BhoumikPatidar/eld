@@ -1,0 +1,118 @@
+name: Nightly check using reverse iterators
+
+on:
+  # pull_request: {} # Uncomment only to test this WF file update.
+  schedule:
+    - cron: '0 8 * * *'  # Runs daily at 2:00 AM CST
+  workflow_dispatch:     # Allows manual triggering
+
+
+permissions:
+  contents: write
+jobs:
+  build-and-runtest-with-reverse-iterators:
+    runs-on: ubuntu-latest
+    if: github.repository == 'qualcomm/eld'
+
+    steps:
+      - name: Set up Clang 20
+        uses: egor-tensin/setup-clang@23bc15cd4207e45f1566447deb48f4ff3ef932cb #v2.3
+        with:
+          version: "20"
+          platform: x64
+
+      - name: Install libc++ and libc++abi
+        run: |
+          sudo apt update
+          sudo apt install -y clang libc++-dev libc++abi-dev ccache libclang-rt-20-dev
+
+      - name: Build and Test with Clang and show versions
+        run: |
+          echo "clang version"
+          clang --version
+          echo "clang++ version"
+          clang++ -stdlib=libc++ --version
+          dpkg -L clang
+          echo '#include <iostream>' > test.cpp
+          echo 'int main() { std::cout << "Hello, Clang on Ubuntu!" << std::endl; return 0; }' >> test.cpp
+          clang++ -std=c++17 -stdlib=libc++ test.cpp -o test_clang
+          ./test_clang
+
+      - name: CPU and Memory information
+        run: |
+          echo "Number of CPUs:"
+          nproc --all # or grep -c ^processor /proc/cpuinfo
+          echo "Memory information:"
+          free -h # or cat /proc/meminfo
+
+      - name: Checkout llvm-project
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: llvm/llvm-project
+          path: llvm-project
+          ref: main
+
+      - name: Checkout eld
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: llvm-project/llvm/tools/eld
+          ref: main
+
+      - name: Configure workflow environment variables
+        uses: ./llvm-project/llvm/tools/eld/.github/workflows/ConfigureBuildWorkflowENV
+
+      - name: Record pre-build entry
+        if: github.event_name == 'schedule'
+        uses: ./llvm-project/llvm/tools/eld/.github/workflows/BuildStatusDataRecorder
+        with:
+          enabled: true
+          project: "llvm-project/llvm/tools/eld"
+          stage: "pre-"
+          workflow-name: "reverse_iterator"
+          record-mode: "record"
+          status: "fail"
+          run-id: ${{github.run_id}}
+          arch-name: "all"
+          branch-name: "${{env.BUILD_BRANCH}}"
+
+      - name: Run CMake
+        run: |
+          mkdir obj
+          cd obj
+          cmake -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON \
+            -DLLVM_REVERSE_ITERATION=ON \
+            -DLLVM_ENABLE_PROJECTS="llvm;clang;clang-tools-extra" \
+            -DCMAKE_C_COMPILER:STRING=`which clang` \
+            -DCMAKE_CXX_COMPILER:STRING=`which clang++` \
+            -DCMAKE_CXX_FLAGS:STRING="-stdlib=libc++" \
+            -DLLVM_TARGETS_TO_BUILD:STRING="ARM;AArch64;RISCV;Hexagon;X86" \
+            -DLLVM_CCACHE_BUILD:BOOL=ON \
+            -DLLVM_CCACHE_DIR:STRING=$PWD/ccache/ \
+            -DLLVM_ENABLE_SPHINX=OFF \
+            ../llvm-project/llvm
+
+      - name: Build Project
+        run: |
+          cd obj
+          ninja -j8
+
+      - name: Run tests
+        run: |
+          cd obj
+          ninja -j8 check-eld
+
+      - name: Update build entry
+        if: github.event_name == 'schedule'
+        uses: ./llvm-project/llvm/tools/eld/.github/workflows/BuildStatusDataRecorder
+        with:
+          enabled: true
+          project: "llvm-project/llvm/tools/eld"
+          stage: "post-"
+          workflow-name: "reverse_iterator"
+          record-mode: "update"
+          status: "pass"
+          run-id: ${{github.run_id}}
+          arch-name: "all"
+          branch-name: "${{env.BUILD_BRANCH}}"

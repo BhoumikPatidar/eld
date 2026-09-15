@@ -1,0 +1,140 @@
+# -*- coding: utf-8 -*-
+#
+# Sphinx configuration for building the ELD userguide from the source tree.
+#
+# The CMake-based build generates a configured `conf.py` from `conf.py.in`.
+# This file exists to make `python -m sphinx ... docs/userguide` work without
+# requiring a configured build directory.
+
+from __future__ import annotations
+
+import os
+import sys
+from pathlib import Path
+
+
+THIS_DIR = Path(__file__).resolve().parent
+REPO_ROOT = (THIS_DIR / ".." / "..").resolve()
+
+sys.path.insert(0, str(THIS_DIR))
+sys.path.insert(0, str(REPO_ROOT))
+
+
+project = "ELD"
+author = "Qualcomm Technologies, Inc"
+
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.todo",
+    "sphinx.ext.ifconfig",
+    "myst_parser",
+    "sphinxext_d2",
+]
+
+_BREATHE_XML_DIR = os.environ.get("ELD_BREATHE_XML_DIR")
+if _BREATHE_XML_DIR:
+    try:
+        import breathe  # noqa: F401
+
+        extensions.append("breathe")
+    except Exception:
+        pass
+
+
+templates_path = ["_templates"]
+exclude_patterns = ["_build", "_build_*", "**/_build", "**/_build_*"]
+
+source_suffix = {
+    ".rst": "restructuredtext",
+    ".md": "markdown",
+}
+master_doc = "index"
+
+language = "en"
+pygments_style = "sphinx"
+todo_include_todos = True
+
+
+# Match the configured build's notion of enabled targets.
+# In a CMake build this comes from conf.py.in via @LLVM_TARGETS_TO_BUILD@.
+# For a source-tree build, fall back to a common multi-target default or
+# allow overriding via LLVM_TARGETS_TO_BUILD.
+targets = os.environ.get("LLVM_TARGETS_TO_BUILD", "ARM;AArch64;Hexagon;RISCV")
+
+html_theme = os.environ.get("SPHINX_HTML_THEME", "sphinx_rtd_theme")
+html_static_path = ["_static"]
+html_meta = {
+    "description": "ELD embedded linker documentation",
+    "keywords": ", ".join(
+        [
+            "eld linker",
+            "embedded linker",
+            "eld embedded linker",
+            "eld documentation",
+            "eld linker documentation",
+            "embedded linker documentation",
+            "eld embedded linker documentation",
+            "embedded linker eld docs",
+            "eld linker docs",
+        ]
+    ),
+}
+
+# D2 diagram configuration
+d2_executable = "d2"
+d2_layout = "elk"
+
+def _read_env_breathe_projects() -> dict[str, str]:
+    """
+    Allow a configured build to provide Breathe XML paths via env vars.
+
+    - `ELD_BREATHE_PROJECT_NAME` (default: "ELD")
+    - `ELD_BREATHE_XML_DIR` (default: unset -> disable breathe projects)
+    """
+
+    name = os.environ.get("ELD_BREATHE_PROJECT_NAME", "ELD")
+    xml_dir = os.environ.get("ELD_BREATHE_XML_DIR")
+    if not xml_dir:
+        return {}
+    return {name: xml_dir}
+
+
+if "breathe" in extensions:
+    breathe_projects = _read_env_breathe_projects()
+    breathe_default_project = next(iter(breathe_projects.keys()))
+
+
+def setup(app):
+    if "breathe" in extensions:
+        return
+
+    # Register no-op directives for Breathe/Doxygen markup so a source-tree
+    # build works without generated XML.
+    from docutils.parsers.rst import Directive, directives
+
+    class _NoopDirective(Directive):
+        has_content = True
+        required_arguments = 0
+        optional_arguments = 1
+        final_argument_whitespace = True
+        option_spec = {
+            "members": directives.flag,
+            "protected-members": directives.flag,
+            "private-members": directives.flag,
+            "undoc-members": directives.flag,
+            "show-inheritance": directives.flag,
+            "project": directives.unchanged,
+            "path": directives.unchanged,
+        }
+
+        def run(self):
+            return []
+
+    for name in (
+        "doxygenclass",
+        "doxygenstruct",
+        "doxygenenum",
+        "doxygenfunction",
+        "doxygenfile",
+    ):
+        app.add_directive(name, _NoopDirective)
