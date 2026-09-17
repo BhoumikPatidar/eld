@@ -1,0 +1,152 @@
+name: Record Workflow
+description: Record pre/post build data for dashboard
+
+inputs:
+  enabled:
+    description: "Turn workflow recording On/Off"
+    default: true
+  project:
+    description: "Project name for build workflow recording"
+    required: true
+  stage:
+    description: "Pre/post build"
+    required: false
+  workflow-name:
+    description: "Build workflow name"
+    required: true
+  record-mode:
+    description: "Build data record or update mode"
+    required: true
+  status:
+    description: "Build workflow pass/fail status"
+    required: true
+  run-id:
+    description: "Build workflow run-id"
+    required: true
+  arch-name:
+    description: "Workflow matrix build arch name"
+    required: true
+  branch-name:
+    description: "Build branch name"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Record ${{ inputs.stage }}build entry
+      if: ${{ inputs.enabled == 'true' }}
+      shell: bash
+      env:
+        PROJECT: ${{ inputs.project }}
+        WORKFLOW_NAME: ${{ inputs.workflow-name }}
+        ARCH_NAME: ${{ inputs.arch-name }}
+        RECORD_MODE: ${{ inputs.record-mode }}
+        STATUS: ${{ inputs.status }}
+        RUN_ID: ${{ inputs.run-id }}
+        BRANCH_NAME: ${{ inputs.branch-name }}
+      run: |
+        # Set +e to not immediately exit "run" step on failure.
+        set +e
+
+        cd "${PROJECT}"
+        DASH_DIR="$(mktemp -d)"
+        cp .github/workflows/scripts/record_builds.py "${DASH_DIR}/"
+        git config user.name 'github-actions'
+        git config user.email 'github-actions@github.com'
+
+        # Record current branch name
+        current_branch=$(git rev-parse --abbrev-ref HEAD)
+
+        # Switch to dashboard branch to access build-status.db
+        git fetch --all
+        git checkout dashboard
+        git reset --hard origin/dashboard
+        ls -l
+
+        : '
+        Multiple workflows and parallel matrix builds write to
+        build-status.db file. This causes race condition, stale DB or
+        git latest ref conflicts.
+        check_lock() is called throughout this workflow to make
+        sure build data is written to current DB file.
+        '
+        check_lock() {
+          FILE_PATH="data.lock"
+          # Checks for build data lock.
+          while [ -f "$FILE_PATH" ]; do
+            echo "Wait for data lock to be removed..."
+            sleep 10
+            git fetch --all
+            git reset --hard origin/dashboard
+            ls -l
+          done
+          echo "Data lock removed"
+        }
+
+        check_lock
+
+        # After data lock is released by other workflows, a lock is acquired for current workflow.
+        lock_file_msg="Add data lock for ${WORKFLOW_NAME} ${ARCH_NAME} build status data to be written"
+        echo "$(date) -> $lock_file_msg" >> dash.log
+        touch data.lock
+        git add .
+        git commit -m "Add data lock for ${WORKFLOW_NAME} ${ARCH_NAME} build status data to be written"
+
+        # Keep trying until a data lock is pushed successfully.
+        until git push -f origin HEAD:refs/heads/dashboard; do
+          sleep 5
+          check_lock
+          echo "$(date) -> $lock_file_msg" >> dash.log
+          touch data.lock
+          git add .
+          git commit -m "$lock_file_msg"
+        done
+
+        # Record build status data for current workflow.
+        echo "Proceeding with data recording..."
+        git checkout --orphan dash
+        cp "${DASH_DIR}/record_builds.py" .
+        python3 record_builds.py --workflow "${WORKFLOW_NAME}" --"${RECORD_MODE}" --"${STATUS}" --run-id "${RUN_ID}" --arch "${ARCH_NAME}" --branch "${BRANCH_NAME}"
+        EXITCODE=$?
+        if [ "$EXITCODE" -ne 0 ]; then
+           echo "Build Data Recording Failed!"
+           echo "Removing Data Lock and Cleaning Up..."
+           rm -f record_builds.py
+           rm -f data.lock
+           git add .
+           git commit -m "Removing ${WORKFLOW_NAME} ${ARCH_NAME} data lock."
+           until git push -f origin HEAD:refs/heads/dashboard; do
+            sleep 5
+            git fetch --all
+            git reset --hard origin/dashboard
+            rm -f data.lock
+            git add .
+            git commit -m "Removing ${WORKFLOW_NAME} ${ARCH_NAME} data lock."
+          done
+          rm -rf "${DASH_DIR}"
+          git checkout -
+        else
+          cp build-status.db "${DASH_DIR}/"
+          rm -f record_builds.py
+          echo "Removing ${WORKFLOW_NAME} ${ARCH_NAME} data lock."
+          rm -f data.lock
+          git add .
+          git commit -m "Add ${WORKFLOW_NAME} ${ARCH_NAME} build status data in DB"
+          # Keep trying until lock/conflicts are resolved and build data is pushed successfully.
+          until git push -f origin HEAD:refs/heads/dashboard; do
+            sleep 5
+            git checkout dashboard
+            check_lock
+            git fetch --all
+            git reset --hard origin/dashboard
+            git checkout --orphan dash
+            cp -f "${DASH_DIR}/build-status.db" .
+            rm -f data.lock
+            lock_file_msg="Add ${WORKFLOW_NAME} ${ARCH_NAME} build status data in DB"
+            echo "$(date) -> $lock_file_msg" >> dash.log
+            git add .
+            git commit -m "$lock_file_msg"
+          done
+          rm -rf "${DASH_DIR}"
+          git checkout "$current_branch"
+        fi
