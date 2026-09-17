@@ -1,13 +1,19 @@
 {
   "summary": {
-    "artifactCount": 29,
-    "activeArtifacts": 29,
-    "totalSize": "3.21 GB"
+    "artifactCount": 30,
+    "activeArtifacts": 30,
+    "totalSize": "3.40 GB"
   },
   "workflows": [
     {
       "name": "Nightly check",
       "artifacts": [
+        {
+          "name": "install-nightly-toolchain.tar.xz",
+          "size": "194.93 MB",
+          "createdAt": "2026-09-16T10:33:43Z",
+          "expiresAt": "2026-12-15T07:12:08Z"
+        },
         {
           "name": "install-nightly-toolchain.tar.xz",
           "size": "194.87 MB",
@@ -116,6 +122,42 @@
       "name": "nightly picolibc builder",
       "artifacts": [
         {
+          "name": "test-results-hexagon",
+          "size": "37.77 KB",
+          "createdAt": "2026-09-16T10:48:43Z",
+          "expiresAt": "2026-09-18T10:48:42Z"
+        },
+        {
+          "name": "test-results-aarch64",
+          "size": "12.06 KB",
+          "createdAt": "2026-09-16T10:43:38Z",
+          "expiresAt": "2026-09-18T10:43:37Z"
+        },
+        {
+          "name": "test-results-riscv32",
+          "size": "40.90 KB",
+          "createdAt": "2026-09-16T10:45:30Z",
+          "expiresAt": "2026-09-18T10:45:29Z"
+        },
+        {
+          "name": "test-results-x86_64",
+          "size": "37.29 KB",
+          "createdAt": "2026-09-16T10:44:04Z",
+          "expiresAt": "2026-09-18T10:44:04Z"
+        },
+        {
+          "name": "test-results-riscv64",
+          "size": "12.18 KB",
+          "createdAt": "2026-09-16T10:43:07Z",
+          "expiresAt": "2026-09-18T10:43:06Z"
+        },
+        {
+          "name": "test-results-arm",
+          "size": "11.75 KB",
+          "createdAt": "2026-09-16T10:42:58Z",
+          "expiresAt": "2026-09-18T10:42:58Z"
+        },
+        {
           "name": "test-results-riscv32",
           "size": "40.38 KB",
           "createdAt": "2026-09-15T10:42:30Z",
@@ -150,42 +192,6 @@
           "size": "11.94 KB",
           "createdAt": "2026-09-15T10:39:15Z",
           "expiresAt": "2026-09-17T10:39:14Z"
-        },
-        {
-          "name": "test-results-x86_64",
-          "size": "37.64 KB",
-          "createdAt": "2026-09-14T10:27:14Z",
-          "expiresAt": "2026-09-16T10:27:13Z"
-        },
-        {
-          "name": "test-results-arm",
-          "size": "11.69 KB",
-          "createdAt": "2026-09-14T10:25:01Z",
-          "expiresAt": "2026-09-16T10:25:00Z"
-        },
-        {
-          "name": "test-results-riscv64",
-          "size": "12.04 KB",
-          "createdAt": "2026-09-14T10:24:41Z",
-          "expiresAt": "2026-09-16T10:24:40Z"
-        },
-        {
-          "name": "test-results-riscv32",
-          "size": "40.53 KB",
-          "createdAt": "2026-09-14T10:26:45Z",
-          "expiresAt": "2026-09-16T10:26:44Z"
-        },
-        {
-          "name": "test-results-hexagon",
-          "size": "37.70 KB",
-          "createdAt": "2026-09-14T10:31:06Z",
-          "expiresAt": "2026-09-16T10:31:05Z"
-        },
-        {
-          "name": "test-results-aarch64",
-          "size": "11.92 KB",
-          "createdAt": "2026-09-14T10:24:37Z",
-          "expiresAt": "2026-09-16T10:24:37Z"
         }
       ]
     }
