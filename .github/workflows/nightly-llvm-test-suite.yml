@@ -110,6 +110,53 @@ jobs:
         run: |
           ninja -C build-llvm-test-suite -j$(nproc) -k 0
 
+      - name: Inspect runtime lookup
+        run: |
+          set -euo pipefail
+
+          ELD_BIN=$(command -v ld.eld)
+          TOOLCHAIN_ROOT=$(dirname "$ELD_BIN")/..
+
+          echo "Toolchain root: $TOOLCHAIN_ROOT"
+          find "$TOOLCHAIN_ROOT/lib" -maxdepth 2 \
+            \( -type f -o -type l \) \
+            \( -name 'libc++*' -o -name 'libc++abi*' -o -name 'libunwind*' \) \
+            -print
+
+          echo "ld.eld dynamic entries:"
+          readelf -d "$ELD_BIN" | grep -E 'NEEDED|RPATH|RUNPATH' || true
+
+          TEST_BIN=""
+          while IFS= read -r candidate; do
+            if readelf -d "$candidate" 2>/dev/null | grep -q 'libc++'; then
+              TEST_BIN="$candidate"
+              break
+            fi
+          done < <(find build-llvm-test-suite \
+            -type f -executable \
+            ! -path '*/CMakeFiles/*' \
+            -print)
+
+          if [[ -z "$TEST_BIN" ]]; then
+            echo "Could not find a test executable linked with libc++" >&2
+            exit 1
+          fi
+
+          echo "Test binary: $TEST_BIN"
+          echo "Test binary dynamic entries:"
+          readelf -d "$TEST_BIN" | grep -E 'NEEDED|RPATH|RUNPATH' || true
+
+          echo "ldd result:"
+          ldd "$TEST_BIN" | grep -E 'libc\+\+|libunwind|not found' || true
+
+          echo "ldconfig result:"
+          ldconfig -p | grep -E 'libc\+\+|libunwind' || true
+
+          echo "Loader trace:"
+          LD_DEBUG=libs "$TEST_BIN" >/tmp/test.out 2>/tmp/test.loader || true
+          grep -E 'libc\+\+|libunwind|/usr/local/lib' \
+            /tmp/test.loader | head -80 || true
+
       - name: Run tests
         run: |
           set -o pipefail
