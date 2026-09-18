@@ -1,13 +1,19 @@
 {
   "summary": {
-    "artifactCount": 30,
-    "activeArtifacts": 30,
-    "totalSize": "3.40 GB"
+    "artifactCount": 26,
+    "activeArtifacts": 26,
+    "totalSize": "3.59 GB"
   },
   "workflows": [
     {
       "name": "Nightly check",
       "artifacts": [
+        {
+          "name": "install-nightly-toolchain.tar.xz",
+          "size": "195.01 MB",
+          "createdAt": "2026-09-17T10:41:03Z",
+          "expiresAt": "2026-12-16T07:13:22Z"
+        },
         {
           "name": "install-nightly-toolchain.tar.xz",
           "size": "194.93 MB",
@@ -119,6 +125,17 @@
       ]
     },
     {
+      "name": "Nightly LLVM Test Suite (x86_64)",
+      "artifacts": [
+        {
+          "name": "llvm-test-suite-results",
+          "size": "158.67 KB",
+          "createdAt": "2026-09-17T13:34:25Z",
+          "expiresAt": "2026-09-18T13:34:24Z"
+        }
+      ]
+    },
+    {
       "name": "nightly picolibc builder",
       "artifacts": [
         {
@@ -156,42 +173,6 @@
           "size": "11.75 KB",
           "createdAt": "2026-09-16T10:42:58Z",
           "expiresAt": "2026-09-18T10:42:58Z"
-        },
-        {
-          "name": "test-results-riscv32",
-          "size": "40.38 KB",
-          "createdAt": "2026-09-15T10:42:30Z",
-          "expiresAt": "2026-09-17T10:42:30Z"
-        },
-        {
-          "name": "test-results-arm",
-          "size": "11.75 KB",
-          "createdAt": "2026-09-15T10:39:29Z",
-          "expiresAt": "2026-09-17T10:39:28Z"
-        },
-        {
-          "name": "test-results-x86_64",
-          "size": "37.32 KB",
-          "createdAt": "2026-09-15T10:41:39Z",
-          "expiresAt": "2026-09-17T10:41:38Z"
-        },
-        {
-          "name": "test-results-riscv64",
-          "size": "12.04 KB",
-          "createdAt": "2026-09-15T10:40:39Z",
-          "expiresAt": "2026-09-17T10:40:39Z"
-        },
-        {
-          "name": "test-results-hexagon",
-          "size": "37.91 KB",
-          "createdAt": "2026-09-15T10:48:08Z",
-          "expiresAt": "2026-09-17T10:48:07Z"
-        },
-        {
-          "name": "test-results-aarch64",
-          "size": "11.94 KB",
-          "createdAt": "2026-09-15T10:39:15Z",
-          "expiresAt": "2026-09-17T10:39:14Z"
         }
       ]
     }
