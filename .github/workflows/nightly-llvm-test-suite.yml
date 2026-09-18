@@ -49,16 +49,19 @@ jobs:
       - name: Fetch nightly ELD
         uses: ./llvm-project/llvm/tools/eld/.github/workflows/FetchNightlyToolset
 
-      - name: Copy runtime libraries
+      - name: Copy private runtime libraries for control
         run: |
+          set -euo pipefail
           ELD_BIN=$(which ld.eld)
           LIB_DIR="$(dirname "$ELD_BIN")/../lib"
-          sudo cp -L \
+          RUNTIME_DIR="$RUNNER_TEMP/eld-runtime"
+          mkdir -p "$RUNTIME_DIR"
+          cp -L \
             "$LIB_DIR/libc++.so.1" \
             "$LIB_DIR/libc++abi.so.1" \
             "$LIB_DIR/x86_64-unknown-linux-gnu/libunwind.so.1" \
-            /usr/local/lib/
-          sudo ldconfig
+            "$RUNTIME_DIR/"
+          echo "Copied runtime libraries to $RUNTIME_DIR"
 
       - name: Clone LLVM test suite
         run: |
@@ -113,6 +116,7 @@ jobs:
       - name: Inspect runtime lookup
         run: |
           set -euo pipefail
+          unset LD_LIBRARY_PATH
 
           ELD_BIN=$(command -v ld.eld)
           TOOLCHAIN_ROOT=$(dirname "$ELD_BIN")/..
@@ -126,16 +130,18 @@ jobs:
           echo "ld.eld dynamic entries:"
           readelf -d "$ELD_BIN" | grep -E 'NEEDED|RPATH|RUNPATH' || true
 
+          mapfile -t TEST_CANDIDATES < <(find build-llvm-test-suite \
+            -type f -executable \
+            ! -path '*/CMakeFiles/*' \
+            -print)
+
           TEST_BIN=""
-          while IFS= read -r candidate; do
+          for candidate in "${TEST_CANDIDATES[@]}"; do
             if readelf -d "$candidate" 2>/dev/null | grep -q 'libc++'; then
               TEST_BIN="$candidate"
               break
             fi
-          done < <(find build-llvm-test-suite \
-            -type f -executable \
-            ! -path '*/CMakeFiles/*' \
-            -print)
+          done
 
           if [[ -z "$TEST_BIN" ]]; then
             echo "Could not find a test executable linked with libc++" >&2
@@ -153,12 +159,18 @@ jobs:
           ldconfig -p | grep -E 'libc\+\+|libunwind' || true
 
           echo "Loader trace:"
-          LD_DEBUG=libs "$TEST_BIN" >/tmp/test.out 2>/tmp/test.loader || true
-          grep -E 'libc\+\+|libunwind|/usr/local/lib' \
+          set +e
+          env -u LD_LIBRARY_PATH LD_DEBUG=libs \
+            "$TEST_BIN" >/tmp/test.out 2>/tmp/test.loader
+          TEST_STATUS=$?
+          set -e
+          echo "Test exit status: $TEST_STATUS"
+          grep -E 'libc\+\+|libunwind|not found|error while loading' \
             /tmp/test.loader | head -80 || true
 
       - name: Run tests
         run: |
+          unset LD_LIBRARY_PATH
           set -o pipefail
           lit -j$(nproc) build-llvm-test-suite 2>&1 | tee test-output.txt
 
