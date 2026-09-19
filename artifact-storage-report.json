@@ -1,7 +1,7 @@
 {
   "summary": {
-    "artifactCount": 26,
-    "activeArtifacts": 26,
+    "artifactCount": 21,
+    "activeArtifacts": 21,
     "totalSize": "3.59 GB"
   },
   "workflows": [
@@ -129,50 +129,15 @@
       "artifacts": [
         {
           "name": "llvm-test-suite-results",
-          "size": "158.67 KB",
-          "createdAt": "2026-09-17T13:34:25Z",
-          "expiresAt": "2026-09-18T13:34:24Z"
-        }
-      ]
-    },
-    {
-      "name": "nightly picolibc builder",
-      "artifacts": [
-        {
-          "name": "test-results-hexagon",
-          "size": "37.77 KB",
-          "createdAt": "2026-09-16T10:48:43Z",
-          "expiresAt": "2026-09-18T10:48:42Z"
+          "size": "119.93 KB",
+          "createdAt": "2026-09-18T11:28:53Z",
+          "expiresAt": "2026-09-25T11:28:52Z"
         },
         {
-          "name": "test-results-aarch64",
-          "size": "12.06 KB",
-          "createdAt": "2026-09-16T10:43:38Z",
-          "expiresAt": "2026-09-18T10:43:37Z"
-        },
-        {
-          "name": "test-results-riscv32",
-          "size": "40.90 KB",
-          "createdAt": "2026-09-16T10:45:30Z",
-          "expiresAt": "2026-09-18T10:45:29Z"
-        },
-        {
-          "name": "test-results-x86_64",
-          "size": "37.29 KB",
-          "createdAt": "2026-09-16T10:44:04Z",
-          "expiresAt": "2026-09-18T10:44:04Z"
-        },
-        {
-          "name": "test-results-riscv64",
-          "size": "12.18 KB",
-          "createdAt": "2026-09-16T10:43:07Z",
-          "expiresAt": "2026-09-18T10:43:06Z"
-        },
-        {
-          "name": "test-results-arm",
-          "size": "11.75 KB",
-          "createdAt": "2026-09-16T10:42:58Z",
-          "expiresAt": "2026-09-18T10:42:58Z"
+          "name": "llvm-test-suite-results",
+          "size": "158.41 KB",
+          "createdAt": "2026-09-18T10:14:55Z",
+          "expiresAt": "2026-09-25T10:14:53Z"
         }
       ]
     }
