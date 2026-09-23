@@ -12,7 +12,8 @@ llvm_add_library(
   x86_64GOT.cpp
   X86_32Emulation.cpp
   X86_32LDBackend.cpp
-  X86_32Relocator.cpp)
+  X86_32Relocator.cpp
+  X86_32RelocationCompute.cpp)
 
 add_subdirectory(TargetInfo)
 

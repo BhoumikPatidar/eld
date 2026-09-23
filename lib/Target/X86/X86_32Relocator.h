@@ -24,6 +24,9 @@ public:
   void scanRelocation(Relocation &, eld::IRBuilder &, ELFSection &, InputFile &,
                       CopyRelocs &) override;
 
+  void partialScanRelocation(Relocation &pReloc,
+                             const ELFSection &pSection) override;
+
   X86_32LDBackend &getTarget() override { return m_Target; }
   const X86_32LDBackend &getTarget() const override { return m_Target; }
 
@@ -31,6 +34,7 @@ public:
 
   Size getSize(Relocation::Type) const override;
   uint32_t getNumRelocs() const override;
+  uint32_t relocType() const override { return llvm::ELF::SHT_REL; }
 
 private:
   X86_32LDBackend &m_Target;
