@@ -1,7 +1,7 @@
 {
   "summary": {
-    "artifactCount": 21,
-    "activeArtifacts": 21,
+    "artifactCount": 19,
+    "activeArtifacts": 19,
     "totalSize": "3.59 GB"
   },
   "workflows": [
@@ -121,23 +121,6 @@
           "size": "190.86 MB",
           "createdAt": "2026-08-07T13:54:37Z",
           "expiresAt": "2026-11-05T10:32:05Z"
-        }
-      ]
-    },
-    {
-      "name": "Nightly LLVM Test Suite (x86_64)",
-      "artifacts": [
-        {
-          "name": "llvm-test-suite-results",
-          "size": "119.93 KB",
-          "createdAt": "2026-09-18T11:28:53Z",
-          "expiresAt": "2026-09-25T11:28:52Z"
-        },
-        {
-          "name": "llvm-test-suite-results",
-          "size": "158.41 KB",
-          "createdAt": "2026-09-18T10:14:55Z",
-          "expiresAt": "2026-09-25T10:14:53Z"
         }
       ]
     }
