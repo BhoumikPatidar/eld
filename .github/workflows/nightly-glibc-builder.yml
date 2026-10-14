@@ -1,0 +1,254 @@
+name: Nightly glibc test suite with ELD x86_64
+
+on:
+  schedule:
+    - cron: '0 3 * * *'  # 3:00 AM UTC daily
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/nightly-glibc-builder.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-glibc-x86_64:
+    if: github.repository == 'qualcomm/eld' || github.repository == 'BhoumikPatidar/eld'
+    runs-on: ubuntu-latest
+    env:
+      ELD_SOURCE_DIR: ${{ github.workspace }}/llvm-project/llvm/tools/eld
+      GLIBC_VERSION: "2.35"
+      GLIBC_SRC: ${{ github.workspace }}/glibc
+      GLIBC_OBJ_ELD: ${{ github.workspace }}/glibc-obj-eld
+      GLIBC_OBJ_LLD: ${{ github.workspace }}/glibc-obj-lld
+
+    steps:
+      - name: Checkout ELD
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          path: llvm-project/llvm/tools/eld
+
+      - name: Configure workflow environment variables
+        uses: ./llvm-project/llvm/tools/eld/.github/workflows/ConfigureBuildWorkflowENV
+
+      - name: Record pre-build entry
+        if: github.event_name == 'schedule'
+        uses: ./llvm-project/llvm/tools/eld/.github/workflows/BuildStatusDataRecorder
+        with:
+          enabled: true
+          project: "llvm-project/llvm/tools/eld"
+          stage: "pre-"
+          workflow-name: "glibc"
+          record-mode: "record"
+          status: "fail"
+          run-id: ${{ github.run_id }}
+          arch-name: "x86-64"
+          branch-name: "${{ env.BUILD_BRANCH }}"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y make bison flex python3 m4 git libglib2.0-dev lld gcc
+
+      - name: Download ELD nightly release
+        run: |
+          curl -L https://github.com/qualcomm/eld/releases/download/nightly/eld-unstable.tar.xz \
+               -o eld-unstable.tar.xz
+          mkdir -p eld-install
+          tar -xf eld-unstable.tar.xz -C eld-install --strip-components=1
+          echo "PATH=$PWD/eld-install/bin:$PATH" >> $GITHUB_ENV
+          echo "LD_LIBRARY_PATH=$PWD/eld-install/lib:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+
+      - name: Verify ELD
+        run: ld.eld --version
+
+      - name: Checkout glibc ${{ env.GLIBC_VERSION }}
+        run: |
+          git clone --depth 1 --branch release/${{ env.GLIBC_VERSION }}/master \
+            https://sourceware.org/git/glibc.git ${{ env.GLIBC_SRC }}
+
+      - name: Set up linker wrappers
+        run: |
+          # ELD wrapper: routes -shared/-r links to LLD (glibc .so builds need
+          # version script support that ELD does not yet have), routes all other
+          # links (test executables) to ELD.
+          mkdir -p /tmp/eld-wrapper
+          printf '%s\n' \
+            '#!/bin/bash' \
+            'if [[ "$1" == "--version" ]]; then' \
+            '  echo "GNU ld (ELD wrapper) 2.39"' \
+            '  ld.eld --version 2>&1; exit 0' \
+            'fi' \
+            'for arg in "$@"; do' \
+            '  case "$arg" in' \
+            '    -shared|-r) exec ld.lld "$@" ;;' \
+            '  esac' \
+            'done' \
+            'exec ld.eld "$@"' \
+            > /tmp/eld-wrapper/ld
+          chmod +x /tmp/eld-wrapper/ld
+
+          # LLD wrapper: routes all links to LLD (used for the LLD baseline run).
+          mkdir -p /tmp/lld-wrapper
+          printf '%s\n' \
+            '#!/bin/bash' \
+            'if [[ "$1" == "--version" ]]; then' \
+            '  echo "GNU ld (LLD wrapper) 2.39"' \
+            '  ld.lld --version 2>&1; exit 0' \
+            'fi' \
+            'exec ld.lld "$@"' \
+            > /tmp/lld-wrapper/ld
+          chmod +x /tmp/lld-wrapper/ld
+
+      # Cache the glibc build trees keyed on glibc version + gcc version.
+      # The .so files and .o files are stable across ELD updates — only the
+      # test executables (linked by ELD) need to be relinked each run.
+      # Cache miss: full make check (~60-90 min). Cache hit: ~15 min.
+      - name: Restore glibc build cache
+        id: cache-glibc
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 #v6.1.0
+        with:
+          path: |
+            ${{ env.GLIBC_OBJ_ELD }}
+            ${{ env.GLIBC_OBJ_LLD }}
+          key: glibc-${{ env.GLIBC_VERSION }}-gcc-${{ runner.os }}-${{ hashFiles('/usr/bin/gcc') }}
+
+      - name: Configure glibc (ELD build) — skipped on cache hit
+        if: steps.cache-glibc.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ${{ env.GLIBC_OBJ_ELD }}
+          cd ${{ env.GLIBC_OBJ_ELD }}
+          ${{ env.GLIBC_SRC }}/configure \
+            CC="gcc -B/tmp/eld-wrapper" \
+            CXX="g++ -B/tmp/eld-wrapper" \
+            LD=/tmp/eld-wrapper/ld \
+            --with-headers=/usr/include \
+            --disable-werror \
+            --enable-shared \
+            --with-default-link=yes
+
+      - name: Configure glibc (LLD baseline) — skipped on cache hit
+        if: steps.cache-glibc.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ${{ env.GLIBC_OBJ_LLD }}
+          cd ${{ env.GLIBC_OBJ_LLD }}
+          ${{ env.GLIBC_SRC }}/configure \
+            CC="gcc -B/tmp/lld-wrapper" \
+            CXX="g++ -B/tmp/lld-wrapper" \
+            LD=/tmp/lld-wrapper/ld \
+            --with-headers=/usr/include \
+            --disable-werror \
+            --enable-shared \
+            --with-default-link=yes
+
+      - name: Force relink test executables with current ELD
+        # Delete test binaries so make check relinks them with the current ELD.
+        # The .so files and .o files are reused from cache — only executables
+        # in elf/ need to be relinked since ELD may have changed since the cache
+        # was written.
+        run: |
+          find ${{ env.GLIBC_OBJ_ELD }}/elf -maxdepth 1 -type f -executable \
+            ! -name "*.so*" ! -name "ld*" -delete 2>/dev/null || true
+          find ${{ env.GLIBC_OBJ_ELD }}/elf -name "*.test-result" -delete 2>/dev/null || true
+          find ${{ env.GLIBC_OBJ_LLD }}/elf -maxdepth 1 -type f -executable \
+            ! -name "*.so*" ! -name "ld*" -delete 2>/dev/null || true
+          find ${{ env.GLIBC_OBJ_LLD }}/elf -name "*.test-result" -delete 2>/dev/null || true
+
+      - name: Run glibc elf/ test suite (ELD)
+        # On cache hit: relinks test executables (~2 min) then runs tests (~15 min).
+        # On cache miss: full build + tests (~60-90 min).
+        run: |
+          make -j$(nproc) -k \
+            -C ${{ env.GLIBC_SRC }} objdir=${{ env.GLIBC_OBJ_ELD }} \
+            check subdirs=elf \
+            CC="gcc -B/tmp/eld-wrapper" CXX="g++ -B/tmp/eld-wrapper" \
+            || true
+
+      - name: Run glibc elf/ test suite (LLD baseline)
+        run: |
+          make -j$(nproc) -k \
+            -C ${{ env.GLIBC_SRC }} objdir=${{ env.GLIBC_OBJ_LLD }} \
+            check subdirs=elf \
+            CC="gcc -B/tmp/lld-wrapper" CXX="g++ -B/tmp/lld-wrapper" \
+            || true
+
+      - name: Save glibc build cache
+        if: steps.cache-glibc.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 #v6.1.0
+        with:
+          path: |
+            ${{ env.GLIBC_OBJ_ELD }}
+            ${{ env.GLIBC_OBJ_LLD }}
+          key: glibc-${{ env.GLIBC_VERSION }}-gcc-${{ runner.os }}-${{ hashFiles('/usr/bin/gcc') }}
+
+      - name: Parse and summarise test results
+        run: |
+          python3 - <<'PY'
+          import glob, os
+          from collections import Counter
+
+          def parse(base):
+              r = {}
+              for f in glob.glob(f"{base}/elf/tst-*.test-result"):
+                  n = "elf/" + os.path.basename(f).replace(".test-result","")
+                  r[n] = open(f).readline().strip().split(":")[0].strip()
+              return r
+
+          eld_obj = os.environ["GLIBC_OBJ_ELD"]
+          lld_obj = os.environ["GLIBC_OBJ_LLD"]
+
+          eld = parse(eld_obj)
+          lld = parse(lld_obj)
+
+          eld_pass = sorted(t for t in eld if eld[t]=="PASS")
+          eld_fail = sorted(t for t in eld if eld[t]=="FAIL")
+          common = set(eld) & set(lld)
+          eld_only = sorted(t for t in common if eld[t]=="FAIL" and lld[t]=="PASS")
+
+          print(f"ELD:  {len(eld)} tests — {dict(Counter(eld.values()))}")
+          print(f"LLD:  {len(lld)} tests — {dict(Counter(lld.values()))}")
+          print(f"\nELD PASS ({len(eld_pass)}): {eld_pass}")
+          print(f"ELD-specific failures: {len(eld_only)}")
+
+          report_path = os.path.join(eld_obj, "elf", "REPORT")
+          with open(report_path, "w") as f:
+              for t in eld_pass:
+                  f.write(f"PASS: {t}\n")
+              for t in eld_fail:
+                  f.write(f"FAIL: {t}\n")
+          print(f"Report written to {report_path}")
+          PY
+
+      - name: Validate test results with FileCheck
+        run: |
+          FileCheck \
+            --check-prefixes=CHECK,COUNT \
+            ${{ env.ELD_SOURCE_DIR }}/test/glibc/x86_64/test-results.txt \
+            < ${{ env.GLIBC_OBJ_ELD }}/elf/REPORT
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
+        with:
+          name: glibc-test-results-x86_64
+          path: ${{ env.GLIBC_OBJ_ELD }}/elf/REPORT
+          if-no-files-found: ignore
+          retention-days: 2
+
+      - name: Update build entry
+        if: github.event_name == 'schedule'
+        uses: ./llvm-project/llvm/tools/eld/.github/workflows/BuildStatusDataRecorder
+        with:
+          enabled: true
+          project: "llvm-project/llvm/tools/eld"
+          stage: "post-"
+          workflow-name: "glibc"
+          record-mode: "update"
+          status: "pass"
+          run-id: ${{ github.run_id }}
+          arch-name: "x86-64"
+          branch-name: "${{ env.BUILD_BRANCH }}"
