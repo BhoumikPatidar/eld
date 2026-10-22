@@ -1,7 +1,7 @@
 {
   "summary": {
-    "artifactCount": 24,
-    "activeArtifacts": 24,
+    "artifactCount": 23,
+    "activeArtifacts": 23,
     "totalSize": "3.59 GB"
   },
   "workflows": [
@@ -121,17 +121,6 @@
           "size": "190.86 MB",
           "createdAt": "2026-08-07T13:54:37Z",
           "expiresAt": "2026-11-05T10:32:05Z"
-        }
-      ]
-    },
-    {
-      "name": "Zephyr Nightly with ELD",
-      "artifacts": [
-        {
-          "name": "zephyr-twister-results-qemu_x86_64",
-          "size": "1019.31 KB",
-          "createdAt": "2026-10-14T21:16:23Z",
-          "expiresAt": "2026-10-21T21:16:22Z"
         }
       ]
     },
