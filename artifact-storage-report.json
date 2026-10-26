@@ -1,7 +1,7 @@
 {
   "summary": {
-    "artifactCount": 23,
-    "activeArtifacts": 23,
+    "artifactCount": 19,
+    "activeArtifacts": 19,
     "totalSize": "3.59 GB"
   },
   "workflows": [
@@ -121,35 +121,6 @@
           "size": "190.86 MB",
           "createdAt": "2026-08-07T13:54:37Z",
           "expiresAt": "2026-11-05T10:32:05Z"
-        }
-      ]
-    },
-    {
-      "name": "nightly picolibc builder",
-      "artifacts": [
-        {
-          "name": "test-results-riscv32",
-          "size": "46.10 KB",
-          "createdAt": "2026-10-19T08:28:21Z",
-          "expiresAt": "2026-10-26T08:28:20Z"
-        },
-        {
-          "name": "test-results-aarch64",
-          "size": "12.15 KB",
-          "createdAt": "2026-10-19T08:25:44Z",
-          "expiresAt": "2026-10-26T08:25:43Z"
-        },
-        {
-          "name": "test-results-arm",
-          "size": "12.09 KB",
-          "createdAt": "2026-10-19T08:25:52Z",
-          "expiresAt": "2026-10-26T08:25:51Z"
-        },
-        {
-          "name": "test-results-riscv64",
-          "size": "12.10 KB",
-          "createdAt": "2026-10-19T08:25:33Z",
-          "expiresAt": "2026-10-26T08:25:32Z"
         }
       ]
     }
