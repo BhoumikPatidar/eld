@@ -1,8 +1,8 @@
 {
   "summary": {
-    "artifactCount": 14,
-    "activeArtifacts": 14,
-    "totalSize": "2.65 GB"
+    "artifactCount": 13,
+    "activeArtifacts": 13,
+    "totalSize": "2.47 GB"
   },
   "workflows": [
     {
@@ -85,12 +85,6 @@
           "size": "193.39 MB",
           "createdAt": "2026-08-20T22:10:05Z",
           "expiresAt": "2026-11-18T19:09:08Z"
-        },
-        {
-          "name": "install-nightly-toolchain.tar.xz",
-          "size": "191.47 MB",
-          "createdAt": "2026-08-12T10:29:25Z",
-          "expiresAt": "2026-11-10T07:31:36Z"
         }
       ]
     }
